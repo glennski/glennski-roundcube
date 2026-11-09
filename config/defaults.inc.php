@@ -767,6 +767,10 @@ $config['max_group_members'] = 0;
 // Name your service. This is displayed on the login screen and in the window title
 $config['product_name'] = 'Roundcube Webmail';
 
+// Web interface opened at the root URL: 'glennski' (new interface, public_html/app/) or 'classic' (Elastic skin).
+// The other one stays reachable: /?classic=1 for the classic interface, /app/ for the new one.
+$config['frontend'] = 'glennski';
+
 // Add this user-agent to message headers when sending. Default: not set.
 $config['useragent'] = null;
 

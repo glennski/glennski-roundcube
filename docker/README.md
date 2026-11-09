@@ -36,6 +36,7 @@ Build and tag with the current version: `make docker`.
 | `ROUNDCUBE_AUTOCONFIG_ALLOW_PLAIN` | `false` | Allow servers without TLS (not recommended) |
 | `ROUNDCUBE_TRUSTED_PROXIES` | – | Reverse proxies whose `X-Forwarded-*` is trusted |
 | `ROUNDCUBE_PRODUCT_NAME`, `ROUNDCUBE_SKIN` | `Webmail`, `elastic` | |
+| `ROUNDCUBE_FRONTEND` | `glennski` | `classic` opens the Elastic interface at the root URL instead of the new one |
 
 Logs go to stdout. Setting any of `IMAP_HOST`, `SETUP_MODE`, `SETUP_EMAIL` or `SETUP_DOMAIN` skips the installer.
 

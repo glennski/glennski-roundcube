@@ -2,6 +2,14 @@
 
 This file includes only changes we consider noteworthy for users, admins and plugin authors. For a full view please look at the git history.
 
+## Glennski 0.3.0 (based on Roundcube 1.8-git)
+
+- New web interface (`public_html/app/`, Preact + htm without a build step): three-pane layout down to phones, light/dark/system theme, compact or comfortable lists, English and German, keyboard shortcuts, search and filters, bulk actions, folder management, compose windows with recipient autocomplete, formatting, attachments (drag and drop, paste), reply/reply all/forward and autosaved drafts, settings (general, accounts, identities, contacts), mailbox switcher in the sidebar
+- Add the JSON API `api.php/v1/*` (see `docs/API.md`): sessions with CSRF protection, folders, messages, search, sanitized HTML, attachments, actions, sending, contacts, identities, settings, mailboxes
+- New config option `frontend` (`glennski` by default, `classic` for the Elastic skin). The other interface stays available: `/?classic=1` and `/app/`
+- Add end-to-end tests (`tests/e2e/`): API and browser tests against a container stack with a throw-away mail server
+- Formatted text is the default for new messages
+
 ## Glennski 0.2.0 (based on Roundcube 1.8-git)
 
 - New first-run installer page (light/dark, English/German) with two tiles: **One email address** (classic: log in with address + mail password; fixed servers or detection at login) and **Account with several mailboxes**

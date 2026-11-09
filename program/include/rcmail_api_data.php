@@ -299,7 +299,8 @@ class rcmail_api_data
             'theme' => $prefs['glennski_theme'] ?? 'auto',
             'density' => $prefs['glennski_density'] ?? 'comfortable',
             'mail_pagesize' => (int) ($prefs['mail_pagesize'] ?? $rc->config->get('mail_pagesize', 50)),
-            'htmleditor' => (int) ($prefs['htmleditor'] ?? $rc->config->get('htmleditor', 0)),
+            // formatted text unless the user chose otherwise (Roundcube's own default is plain text)
+            'htmleditor' => (int) ($prefs['htmleditor'] ?? 1),
             'language' => $prefs['language'] ?? $rc->user->language,
             'timezone' => $prefs['timezone'] ?? 'auto',
         ];

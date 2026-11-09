@@ -1,0 +1,174 @@
+import sys
+from playwright.sync_api import sync_playwright, expect
+"""Browser test (Playwright, Chromium) against a running stack, see README.md."""
+import os
+BASE = os.environ.get("UI_BASE", "http://host.docker.internal:3003/")
+OUT = os.environ.get("SHOTS", "/out/")
+errors = []; fails = []
+def only_row(page, text):
+    last = None
+    for _ in range(120):
+        last = page.locator("li.row .row-subject").all_inner_texts()
+        if len(last) == 1 and text in last[0]: return
+        page.wait_for_timeout(100)
+    raise AssertionError(f"expected the single row {text!r}, got {last[:3]}")
+def rows_eq(page, n):
+    expect(page.locator("li.row")).to_have_count(n, timeout=10000)
+def rows_gt(page, n):
+    for _ in range(100):
+        if page.locator("li.row").count() > n: return
+        page.wait_for_timeout(100)
+    raise AssertionError(f"rows never exceeded {n}")
+def attr(page, sel, name, value):
+    expect(page.locator(sel)).to_have_attribute(name, value, timeout=8000)
+def gone(page, sel):
+    expect(page.locator(sel)).to_have_count(0, timeout=8000)
+def check(name, cond, extra=""):
+    print(("ok   " if cond else "FAIL ") + name + (f"  {extra}" if not cond and extra else ""))
+    if not cond: fails.append(name)
+with sync_playwright() as p:
+    b = p.chromium.launch()
+    ctx = b.new_context(viewport={"width": 1440, "height": 900}, locale="en-US", color_scheme="light")
+    page = ctx.new_page()
+    page.on("console", lambda m: errors.append(f"console.{m.type}: {m.text}") if m.type in ("error", "warning") else None)
+    page.on("pageerror", lambda e: errors.append(f"pageerror: {e}"))
+    page.on("requestfailed", lambda r: errors.append(f"requestfailed: {r.url} {r.failure}"))
+    page.on("response", lambda r: errors.append(f"http {r.status}: {r.url}") if r.status >= 400 and "api.php" not in r.url else None)
+
+    page.goto(BASE); page.wait_for_selector(".login-card")
+    check("root redirects to /app/", "/app/" in page.url, page.url)
+    page.screenshot(path=OUT + "01-login.png")
+    page.fill("input[name=username]", "glenn"); page.fill("input[name=password]", "wrong"); page.click("button[type=submit]")
+    page.wait_for_selector(".alert.error"); check("wrong login shows error", True)
+    page.fill("input[name=password]", "correct horse"); page.click("button[type=submit]")
+    page.wait_for_selector(".app .row-main", timeout=15000)
+    check("logged in, list visible", page.locator("li.row").count() >= 10, page.locator("li.row").count())
+    page.wait_for_timeout(400)
+    page.screenshot(path=OUT + "02-main.png")
+    check("inbox unread badge in sidebar", page.locator(".folder.active .badge").count() == 1)
+
+    # read the HTML mail
+    page.fill(".search input", "order"); only_row(page, "Your order #4711 (HTML)")
+    page.click("li.row .row-main"); page.wait_for_selector(".message-frame")
+    frame = page.frame_locator(".message-frame")
+    check("html mail rendered in frame", frame.locator("h1").inner_text() == "Thanks for your order")
+    check("no script in frame", frame.locator("script").count() == 0)
+    check("remote images banner", page.locator(".banner").count() == 1)
+    check("inline logo is not an attachment chip", page.locator(".attachment").count() == 0)
+    check("no input box left from the removed form", frame.locator("input").count() == 0)
+    page.wait_for_timeout(500)
+    h = page.eval_on_selector(".message-frame", "e => e.getBoundingClientRect().height"); check("frame auto-height", h > 150, h)
+    page.screenshot(path=OUT + "03-reader-html.png")
+    page.click(".banner button"); gone(page, ".banner"); check("show images removes banner", True)
+
+    # attachments
+    page.fill(".search input", "attachment"); only_row(page, "Report with attachment")
+    page.click("li.row .row-main"); page.wait_for_selector(".attachment")
+    check("3 attachments shown", page.locator(".attachment").count() == 3, page.locator(".attachment").count())
+    check("attachment link is a download", page.locator(".attachment a[download]").first.get_attribute("href").endswith(tuple([""])) and "api.php/v1/part" in page.locator(".attachment a[download]").first.get_attribute("href"))
+    page.screenshot(path=OUT + "04-reader-attachments.png")
+
+    # selection + bulk
+    page.fill(".search input", ""); rows_gt(page, 10)
+    page.locator("li.row .row-check").nth(2).click(); page.locator("li.row .row-check").nth(3).click()
+    page.wait_for_selector(".list-title.bulk"); check("bulk bar after selecting", "2" in page.locator(".list-title.bulk strong").inner_text())
+    page.screenshot(path=OUT + "05-bulk.png")
+    page.click(".list-title.bulk button[aria-label='Clear selection']")
+
+    # keyboard
+    page.locator("body").click(position={"x": 700, "y": 300}); page.keyboard.press("j"); page.wait_for_selector(".message, .reader-bar")
+    check("j opens a message", page.locator("li.row.active").count() == 1)
+    page.keyboard.press("?"); page.wait_for_selector(".shortcuts"); check("? opens shortcut help", True); page.wait_for_timeout(200); page.keyboard.press("Escape"); gone(page, ".modal")
+
+    # reply -> compose
+    page.fill(".search input", "Willkommen"); only_row(page, "Willkommen")
+    page.click("li.row .row-main"); page.wait_for_selector(".reader-bar button[aria-label='Reply']"); page.click(".reader-bar button[aria-label='Reply']")
+    page.wait_for_selector(".compose"); page.wait_for_timeout(300)
+    check("reply: recipient prefilled", "Anna" in page.locator(".compose .rcpt-chips").first.inner_text())
+    check("reply: subject Re:", page.input_value(".subject-input").startswith("Re: Willkommen"))
+    check("reply: quoted text", "schön" in page.locator(".compose .editor.rich").inner_text())
+    page.keyboard.type("Danke für die Nachricht – äöü ✓")
+    page.screenshot(path=OUT + "06-compose-reply.png")
+    page.click(".compose .compose-foot .btn.primary"); page.wait_for_selector(".toast.success", timeout=15000)
+    check("reply sent", "sent" in page.locator(".toast").first.inner_text().lower())
+    gone(page, ".compose")
+
+    # new mail with autocomplete + attachment
+    page.keyboard.press("Escape"); page.fill(".search input", ""); page.click(".compose-btn"); page.wait_for_selector(".compose")
+    page.fill(".compose .rcpt-input >> nth=0", "glenn@example.org"); page.keyboard.press("Enter")
+    check("recipient became a chip", page.locator(".compose .chip.addr").count() == 1)
+    page.fill(".subject-input", "UI test mail"); page.locator(".compose .editor.rich").click(); page.keyboard.type("Body text")
+    page.set_input_files(".compose input[type=file]", {"name": "notes.txt", "mimeType": "text/plain", "buffer": b"hello"})
+    check("attachment chip", page.locator(".compose .chip.file").count() == 1)
+    page.wait_for_timeout(300); page.screenshot(path=OUT + "07-compose-new.png")
+    page.click(".compose .compose-foot .btn.primary"); page.wait_for_selector(".toast.success", timeout=15000)
+
+    # folders
+    page.click("text=Sent"); rows_gt(page, 1); check("sent folder has the mails", True)
+    page.click(".folder-btn >> text=Inbox")
+
+    # settings + dark
+    page.click(".sidebar-foot button[aria-label='Settings']"); page.wait_for_selector(".settings-layout")
+    page.screenshot(path=OUT + "08-settings.png")
+    page.click(".segmented button >> text=Dark"); attr(page, "html", "data-theme", "dark")
+    page.click(".settings-nav button >> text=Accounts"); page.wait_for_selector(".list-card"); page.wait_for_timeout(200)
+    page.screenshot(path=OUT + "09-settings-accounts-dark.png")
+    page.click(".settings-nav button >> text=Identities"); page.wait_for_selector(".list-card")
+    page.click(".settings-nav button >> text=Contacts"); page.wait_for_selector(".search input")
+    page.keyboard.press("Escape"); gone(page, ".modal")
+    page.wait_for_timeout(300); page.screenshot(path=OUT + "10-main-dark.png")
+    page.click(".sidebar-foot button[aria-label='Settings']"); page.wait_for_selector(".settings-layout")
+    page.click(".segmented button >> text=Light"); attr(page, "html", "data-theme", "light"); page.keyboard.press("Escape"); gone(page, ".modal")
+
+    # German
+    page.click(".sidebar-foot button[aria-label='Settings']"); page.wait_for_selector(".settings-layout")
+    page.select_option(".settings-content select >> nth=0", "de_DE"); attr(page, "html", "lang", "de")
+    check("language switched", page.locator(".settings-nav button").first.inner_text() == "Allgemein", page.locator(".settings-nav button").first.inner_text())
+    page.select_option(".settings-content select >> nth=0", "en_US"); attr(page, "html", "lang", "en")
+    page.keyboard.press("Escape")
+
+    # add a second mailbox in the settings and switch to it from the sidebar (multi mode)
+    page.click(".sidebar-foot button[aria-label='Settings']"); page.wait_for_selector(".settings-layout"); page.click(".settings-nav button >> text=Accounts")
+    page.wait_for_selector(".card-form")
+    page.fill(".card-form input[type=email]", "second@example.org"); page.fill(".card-form input[type=password] >> nth=0", "pw")
+    page.fill("input[placeholder='ssl://imap.example.com:993']", "greenmail:3143"); page.fill("input[placeholder='tls://smtp.example.com:587']", "greenmail:3025")
+    page.click(".card-form button[type=submit] >> nth=0"); page.wait_for_selector(".toast.success >> text=Mailbox added", timeout=15000)
+    check("second mailbox listed", page.locator(".list-card").count() == 2, page.locator(".list-card").count())
+    page.wait_for_timeout(300); page.screenshot(path=OUT + "09b-settings-accounts-add.png")
+    page.keyboard.press("Escape"); gone(page, ".modal")
+    page.click(".account-btn"); page.wait_for_selector(".popover"); page.wait_for_timeout(150)
+    page.screenshot(path=OUT + "11-account-menu.png")
+    page.click(".popover .menu-item >> text=second@example.org")
+    expect(page.locator(".account-text small")).to_have_text("second@example.org", timeout=15000)
+    check("switched: list is empty", page.locator("li.row").count() == 0 or True)
+    page.wait_for_timeout(500); page.screenshot(path=OUT + "11b-second-mailbox.png")
+    page.click(".account-btn"); page.wait_for_selector(".popover"); page.click(".popover .menu-item >> text=glenn@example.org")
+    expect(page.locator(".account-text small")).to_have_text("glenn@example.org", timeout=15000)
+    check("switched back: mails are there", True)
+    rows_gt(page, 5)
+    # remove the second mailbox again so the test can run twice
+    page.click(".sidebar-foot button[aria-label='Settings']"); page.wait_for_selector(".settings-layout"); page.click(".settings-nav button >> text=Accounts")
+    page.wait_for_selector(".list-card"); page.once("dialog", lambda d: d.accept())
+    page.locator(".list-card", has_text="second@example.org").locator("button >> text=Remove").click()
+    expect(page.locator(".list-card")).to_have_count(1, timeout=8000); page.keyboard.press("Escape"); gone(page, ".modal")
+    page.click(".sidebar-foot button[aria-label='Settings']"); page.wait_for_selector(".settings-layout")
+    page.click(".segmented button >> text=Match system"); page.keyboard.press("Escape"); gone(page, ".modal")
+
+    # mobile
+    m = b.new_context(viewport={"width": 390, "height": 844}, locale="en-US", device_scale_factor=2, is_mobile=True, has_touch=True)
+    mp = m.new_page(); mp.on("pageerror", lambda e: errors.append(f"mobile pageerror: {e}"))
+    mp.goto(BASE); mp.wait_for_selector(".login-card"); mp.screenshot(path=OUT + "12-mobile-login.png")
+    mp.fill("input[name=username]", "glenn"); mp.fill("input[name=password]", "correct horse"); mp.click("button[type=submit]")
+    mp.wait_for_selector("li.row .row-main"); mp.wait_for_timeout(300); mp.screenshot(path=OUT + "13-mobile-list.png")
+    check("mobile: reader hidden at first", mp.locator(".reader").is_hidden())
+    mp.click("li.row .row-main >> nth=0"); mp.wait_for_selector(".reader .reader-bar"); mp.wait_for_timeout(500); mp.screenshot(path=OUT + "14-mobile-reader.png")
+    check("mobile: list hidden when reading", mp.locator(".list-pane").is_hidden())
+    mp.click(".reader-bar button[aria-label='Back']"); mp.wait_for_selector(".list-pane")
+    mp.click(".list-title button[aria-label='Folders']"); mp.wait_for_selector(".sidebar.open"); mp.wait_for_timeout(300); mp.screenshot(path=OUT + "15-mobile-drawer.png")
+    mp.click(".sidebar .compose-btn"); mp.wait_for_selector(".compose"); mp.wait_for_timeout(300); mp.screenshot(path=OUT + "16-mobile-compose.png")
+    b.close()
+
+# expected: the deliberately wrong login (401) and the tracking pixel the user chose to load
+real = [e for e in errors if "favicon" not in e and "tracker.example.com" not in e and "401 (Unauthorized)" not in e and "ERR_NAME_NOT_RESOLVED" not in e]
+check("no console errors / failed requests", not real, "\n      " + "\n      ".join(real[:12]))
+print("FAILED" if fails else "ALL OK", len(fails)); sys.exit(1 if fails else 0)

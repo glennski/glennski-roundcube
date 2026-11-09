@@ -187,7 +187,9 @@ class rcmail_api_mail
         $h = $msg->headers;
         $was_unseen = empty($h->flags['SEEN']);
 
-        if ($was_unseen && !$this->api->int('peek', 0)) {
+        $marked = $was_unseen && !$this->api->int('peek', 0);
+
+        if ($marked) {
             $storage->set_flag($uid, 'SEEN', $folder);
         }
 
@@ -218,6 +220,11 @@ class rcmail_api_mail
 
         $attachments = [];
         foreach ($msg->attachments as $part) {
+            // images embedded in the HTML (cid:) are part of the body, not attachments
+            if (!empty($part->content_id) && $html !== null && stripos($html, trim($part->content_id, '<>')) !== false) {
+                continue;
+            }
+
             $attachments[] = [
                 'part' => $part->mime_id,
                 'name' => $part->filename ?: ('attachment-' . $part->mime_id),
@@ -227,7 +234,8 @@ class rcmail_api_mail
             ];
         }
 
-        return $this->summary($h, $folder) + [
+        // 'seen' is the state after this request, 'seen_before' the one the list showed
+        return array_merge($this->summary($h, $folder), ['seen' => !$was_unseen || $marked]) + [
             'seen_before' => !$was_unseen,
             'cc' => $this->addresses($h->cc, $h->charset),
             'bcc' => $this->addresses($h->bcc ?? '', $h->charset),
@@ -476,7 +484,8 @@ class rcmail_api_mail
 
         foreach ($msg->mime_parts as $part) {
             if (!empty($part->content_id) && in_array(strtolower($part->mimetype), self::INLINE_IMAGES, true)) {
-                $map['cid:' . trim($part->content_id, '<>')] = 'api.php/v1/part?' . http_build_query([
+                // absolute path: the message is shown in a frame whose base URL differs from the page
+                $map['cid:' . trim($part->content_id, '<>')] = $_SERVER['SCRIPT_NAME'] . '/v1/part?' . http_build_query([
                     'folder' => $folder, 'uid' => $msg->uid, 'part' => $part->mime_id, 'inline' => 1, '_token' => $this->rc->get_request_token(),
                 ]);
             }
@@ -505,6 +514,8 @@ class rcmail_api_mail
             'blocked_src' => self::BLOCKED_IMAGE,
             'cid_map' => $cid_map,
             'html_elements' => ['html', 'head', 'title', 'body', 'link'],
+            // nothing in a message should collect input (<form> itself is dropped by the washer, its text stays)
+            'ignore_elements' => ['input', 'button', 'select', 'textarea', 'option', 'optgroup', 'datalist'],
         ]);
 
         $clean = $washer->wash($html);

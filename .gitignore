@@ -44,3 +44,5 @@ skins/elastic/styles/_variables.less
 
 # PHPUnit cache
 /tests/.phpunit.result.cache
+tests/e2e/data/
+tests/e2e/screenshots/

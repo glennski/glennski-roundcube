@@ -60,6 +60,12 @@ if ($RCMAIL->config->get('setup_required')) {
     exit;
 }
 
+// new frontend: the default entry point, unless the classic interface is asked for
+if ($RCMAIL->config->get('frontend') === 'glennski' && !isset($_GET['classic']) && empty($_GET['_task']) && empty($_GET['_action']) && empty($_GET['_err']) && empty($_POST)) {
+    header('Location: app/');
+    exit;
+}
+
 // error steps
 if ($RCMAIL->action == 'error' && !empty($_GET['_code'])) {
     rcmail::raise_error(['code' => hexdec($_GET['_code'])], false, true);

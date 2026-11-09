@@ -1,0 +1,23 @@
+# End-to-end stack: this repository as a container plus a throw-away IMAP/SMTP server.
+# Started by run.sh; not meant for production.
+services:
+  webmail:
+    build:
+      context: ../..
+    image: glennski-roundcube:e2e
+    ports:
+      - "3003:80"
+    volumes:
+      - ./data:/var/roundcube
+    environment:
+      ROUNDCUBE_ENABLE_PLUGINS: archive,zipdownload
+      ROUNDCUBE_AUTOCONFIG_ALLOW_PRIVATE: "true"   # the mail server is a private host
+      ROUNDCUBE_AUTOCONFIG_ALLOW_PLAIN: "true"     # and speaks without TLS
+    depends_on: [greenmail]
+  greenmail:
+    image: docker.io/greenmail/standalone
+    ports:
+      - "3025:3025"
+      - "3143:3143"
+    environment:
+      GREENMAIL_OPTS: '-Dgreenmail.setup.test.all -Dgreenmail.hostname=0.0.0.0 -Dgreenmail.auth.disabled'

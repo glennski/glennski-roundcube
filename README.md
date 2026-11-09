@@ -33,7 +33,7 @@ Roundcubemail follows the semantic versioning rules for releases. For more detai
 [the RELEASE_MANAGEMENT file](docs/RELEASE_MANAGEMENT.md).
 
 
-GLENNSKI EDITION (0.2.0)
+GLENNSKI EDITION (0.3.0)
 ------------------------
 This fork adds, on top of Roundcube:
 
@@ -43,6 +43,9 @@ This fork adds, on top of Roundcube:
   (classic login with address + mail password) or an *account with several mailboxes*
   (own password, mailboxes from any provider added under Settings > Accounts, switch between them).
   Also available as `bin/setup.php`
+* **New web interface** - a fast single-page client (`public_html/app/`) on top of a JSON API
+  (`public_html/api.php`, documented in [docs/API.md](docs/API.md)). It is the default at the root
+  URL; the classic Elastic interface stays available at `/?classic=1`, or set `$config['frontend'] = 'classic'`.
 * **Docker first** - `docker compose up -d`, see [docker/README.md](docker/README.md).
   Uploading the files to a classic PHP web server and using the web installer still works.
 

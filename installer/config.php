@@ -71,7 +71,45 @@ if (!empty($_POST['submit'])) {
     echo "\n<hr style='margin-bottom:1.6em' />\n";
 }
 
+// Setup wizard: pre-fill the form below from a detected (or per-login) mail server setup
+$wizard_mode = $_GET['_wizard_mode'] ?? '';
+$wizard_input = trim($_GET['_wizard_input'] ?? '');
+
+if ($wizard_mode) {
+    try {
+        $wizard = (new rcube_autoconfig())->wizard($wizard_mode, $wizard_input);
+        $wizard_plugins = (array) ($wizard['plugins'] ?? []);
+        unset($wizard['plugins']);
+
+        foreach ($wizard as $prop => $value) {
+            $RCI->config[$prop] = $value;
+        }
+        if ($wizard_plugins) {
+            $RCI->config['plugins'] = array_unique(array_merge((array) ($RCI->config['plugins'] ?? []), $wizard_plugins));
+        }
+
+        echo '<p class="notice">Server settings were filled in below. Review them and click <b>CREATE CONFIG</b>.</p>';
+    } catch (\Exception $e) {
+        echo '<p class="warning">' . rcube::Q($e->getMessage()) . '. Fill in the servers manually or choose "Detect at login".</p>';
+    }
+}
+
 ?>
+<form action="?" method="get">
+<input type="hidden" name="_step" value="2" />
+<fieldset>
+<legend>Setup wizard</legend>
+<p>How should Roundcube find the mail servers?</p>
+<p><label><input type="radio" name="_wizard_mode" value="fixed"<?php echo $wizard_mode !== 'auto' ? ' checked="checked"' : ''; ?> />
+  Fixed servers &ndash; detect them once from an email address or domain:</label>
+  <input type="text" name="_wizard_input" size="30" placeholder="you@example.com" value="<?php echo rcube::Q($wizard_input); ?>" /></p>
+<p><label><input type="radio" name="_wizard_mode" value="auto"<?php echo $wizard_mode === 'auto' ? ' checked="checked"' : ''; ?> />
+  Detect at login &ndash; look up the servers of whatever address a user logs in with (enables the <tt>autoconfig</tt> plugin)</label></p>
+<p class="hint">Tries provider autoconfig, Autodiscover, SRV records, the Thunderbird ISP database and MX lookup. Requests are only made to public hosts.</p>
+<p><input type="submit" value="DETECT" /></p>
+</fieldset>
+</form>
+
 <form action="?" method="post">
 <input type="hidden" name="_step" value="2" />
 

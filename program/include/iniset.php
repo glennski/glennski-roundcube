@@ -28,6 +28,8 @@ if (\PHP_VERSION_ID < 80100) {
 
 // application constants
 define('RCMAIL_VERSION', '1.8-git');
+// version of this distribution (single source of truth: the VERSION file, also used for Docker tags)
+define('GLENNSKI_VERSION', trim((string) @file_get_contents(__DIR__ . '/../../VERSION')) ?: 'dev');
 define('RCMAIL_START', microtime(true));
 
 if (!defined('INSTALL_PATH')) {

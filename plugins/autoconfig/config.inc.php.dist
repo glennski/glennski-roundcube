@@ -1,0 +1,19 @@
+<?php
+
+// Sources to try, in this order.
+// Available: autoconfig, autodiscover, srv, ispdb, mx
+$config['autoconfig_sources'] = ['autoconfig', 'autodiscover', 'srv', 'ispdb', 'mx'];
+
+// Cache discovered settings (and failures), see 'cache' types in defaults.inc.php: db, apc, memcache, redis
+$config['autoconfig_cache'] = 'db';
+$config['autoconfig_cache_ttl'] = '1d';
+
+// Accept hosts in private/reserved address ranges (e.g. 10.x, 127.x).
+// Keep disabled on public installations: it would allow probing your internal network.
+$config['autoconfig_allow_private'] = false;
+
+// Accept servers without TLS. Credentials would then be sent in clear text.
+$config['autoconfig_allow_plain'] = false;
+
+// Use the configured smtp_host instead of the discovered one
+$config['autoconfig_keep_smtp_host'] = false;

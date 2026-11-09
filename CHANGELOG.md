@@ -2,6 +2,13 @@
 
 This file includes only changes we consider noteworthy for users, admins and plugin authors. For a full view please look at the git history.
 
+## Glennski 0.1.0 (based on Roundcube 1.8-git)
+
+- Add `autoconfig` plugin and `rcube_autoconfig` class: detect IMAP/SMTP servers from the address typed at login (provider autoconfig, Autodiscover, SRV records RFC 6186/8314, Thunderbird ISP database, MX lookup). Lookups only touch public hosts and require TLS by default
+- Add setup wizard to the web installer and `bin/setup.php`: fixed servers detected once from an address/domain, or detection at every login
+- Add Docker-first deployment: `Dockerfile`, `docker-compose.yml`, configuration via `ROUNDCUBE_*` environment variables (see `docker/README.md`)
+- Add `VERSION` file and `GLENNSKI_VERSION` constant
+
 ## Unreleased
 
 - Preserve the original message date on import of EML messages (#5559, #10251)

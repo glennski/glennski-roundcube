@@ -1,0 +1,25 @@
+# Quick start:  docker compose up -d   ->  http://localhost:8080
+# Default: SQLite, servers are detected from the address typed at login.
+services:
+  webmail:
+    build:
+      context: .
+      args:
+        VERSION: ${VERSION:-dev}
+    image: glennski-roundcube:${VERSION:-dev}
+    ports:
+      - "8080:80"
+    volumes:
+      - roundcube:/var/roundcube
+    environment:
+      # Fixed servers instead of per-login detection (pick one):
+      #   ROUNDCUBE_IMAP_HOST: tls://imap.example.com:143
+      #   ROUNDCUBE_SMTP_HOST: tls://smtp.example.com:587
+      #   ROUNDCUBE_SETUP_EMAIL: you@example.com      # detected once at start
+      # External database (default is SQLite in the volume):
+      #   ROUNDCUBE_DB_DSN: pgsql://roundcube:secret@db/roundcube
+      ROUNDCUBE_PLUGINS: archive,zipdownload
+    restart: unless-stopped
+
+volumes:
+  roundcube:

@@ -127,6 +127,9 @@ composer-update: /tmp/composer.phar
 install-jsdeps: npm-install
 	./bin/install-jsdeps.sh
 
+docker:
+	docker build --build-arg VERSION=$$(cat VERSION) -t glennski-roundcube:$$(cat VERSION) -t glennski-roundcube:latest .
+
 build: composer-update install-jsdeps css-elastic plugins-build
 
 plugins-build: plugin-markdown_editor-build

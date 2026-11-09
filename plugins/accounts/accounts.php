@@ -136,40 +136,24 @@ class accounts extends rcube_plugin
     public function action_add()
     {
         $in = static fn ($name) => trim(rcube_utils::get_input_string($name, rcube_utils::INPUT_POST, true));
-        $email = $in('_email');
-        $box = [
-            'email' => $email,
+
+        $error = $this->rc->check_request() ? $this->api_add([
+            'email' => $in('_email'),
             'imap_host' => $in('_imap_host'),
-            'imap_user' => $in('_imap_user') ?: $email,
+            'imap_user' => $in('_imap_user'),
             'imap_pass' => rcube_utils::get_input_string('_password', rcube_utils::INPUT_POST, true),
             'smtp_host' => $in('_smtp_host'),
             'label' => $in('_label'),
-        ];
+        ]) : $this->gettext('invalidrequest');
 
-        if (!$this->rc->check_request()) {
-            $error = 'invalidrequest';
-        } elseif (!filter_var($email, \FILTER_VALIDATE_EMAIL) || $box['imap_host'] === '' || $box['imap_pass'] === '') {
-            $error = 'accounts.missingfields';
-        } elseif (!$this->host_allowed($box['imap_host'])) {
-            $error = 'accounts.hostnotallowed';
-        } elseif ($error_text = \accounts_store::check_imap($box['imap_host'], $box['imap_user'], $box['imap_pass'])) {
-            $this->rc->output->show_message($this->gettext('connectfailed') . ': ' . $error_text, 'error');
-            $error = true;
-        } else {
-            $this->store()->mailbox_add($this->app_user(), $box);
-            $this->rc->output->show_message('accounts.added', 'confirmation');
-        }
-
-        if (!empty($error) && $error !== true) {
-            $this->rc->output->show_message($error, 'error');
-        }
+        $error ? $this->rc->output->show_message($error, 'error') : $this->rc->output->show_message('accounts.added', 'confirmation');
 
         $this->action_index();
     }
 
     public function action_delete()
     {
-        $ok = $this->rc->check_request() && $this->store()->mailbox_delete((int) rcube_utils::get_input_string('_id', rcube_utils::INPUT_POST), $this->app_user());
+        $ok = $this->rc->check_request() && $this->api_remove((int) rcube_utils::get_input_string('_id', rcube_utils::INPUT_POST));
         $this->rc->output->show_message($ok ? 'accounts.removed' : 'accounts.cannotremove', $ok ? 'confirmation' : 'error');
         $this->action_index();
     }
@@ -177,51 +161,29 @@ class accounts extends rcube_plugin
     public function action_default()
     {
         if ($this->rc->check_request()) {
-            $this->store()->mailbox_set_default((int) rcube_utils::get_input_string('_id', rcube_utils::INPUT_POST), $this->app_user());
+            $this->api_default((int) rcube_utils::get_input_string('_id', rcube_utils::INPUT_POST));
             $this->rc->output->show_message('successfullysaved', 'confirmation');
         }
         $this->action_index();
     }
 
     /**
-     * Server side sign-in to another mailbox of the same app account.
+     * Sign in to another mailbox, then show the mail view.
      */
     public function action_switch()
     {
-        $app = $this->app_user();
-        $box = $this->rc->check_request(rcube_utils::INPUT_GET)
-            ? $this->store()->mailbox((int) rcube_utils::get_input_string('_id', rcube_utils::INPUT_GET), $app)
-            : null;
-        $user = $_SESSION['accounts']['user'] ?? null;
+        $error = $this->rc->check_request(rcube_utils::INPUT_GET)
+            ? $this->api_switch((int) rcube_utils::get_input_string('_id', rcube_utils::INPUT_GET))
+            : $this->gettext('invalidrequest');
 
-        // check first, so a wrong password does not end the current session
-        if ($box && ($error = \accounts_store::check_imap($box['imap_host'], $box['imap_user'], $box['imap_pass']))) {
-            $this->rc->output->show_message($this->gettext('connectfailed') . ': ' . $error, 'error');
-            $box = null;
-        }
-
-        if (!$box) {
+        if ($error) {
+            $this->rc->output->show_message($error, 'error');
             $this->action_index();
+
             return;
         }
 
-        $this->switching = ['box' => $box];
-        $smtp = $box['smtp_host'];
-        $app_row = ['user_id' => $app, 'username' => $user];
-
-        $this->rc->kill_session();
-
-        if ($this->rc->login($box['imap_user'], $box['imap_pass'], $box['imap_host'])) {
-            $this->rc->session->remove('temp');
-            $this->rc->session->regenerate_id(false);
-            $this->rc->session->set_auth_cookie();
-            $this->remember($app_row, $box);
-            $this->rc->log_login();
-            $this->rc->output->redirect(['_task' => 'mail'], 0, true);
-        }
-
-        // the check above passed, so this is a race; send the user to the login page
-        $this->rc->output->redirect(['_task' => 'login'], 0, true);
+        $this->rc->output->redirect(['_task' => 'mail'], 0, true);
     }
 
     /**
@@ -230,37 +192,141 @@ class accounts extends rcube_plugin
     public function action_detect()
     {
         $email = trim(rcube_utils::get_input_string('_email', rcube_utils::INPUT_POST));
-        $result = null;
 
-        if ($this->rc->check_request() && filter_var($email, \FILTER_VALIDATE_EMAIL)) {
-            $result = $this->autoconfig()->lookup($email);
-        }
-
-        $this->rc->output->command('plugin.accounts_detected', $result ? [
-            'imap_host' => rcube_autoconfig::to_config($result)['imap_host'],
-            'smtp_host' => rcube_autoconfig::to_config($result)['smtp_host'],
-            'imap_user' => $result['username'] === 'localpart' ? strstr($email, '@', true) : $email,
-        ] : null);
+        $this->rc->output->command('plugin.accounts_detected', $this->rc->check_request() ? $this->api_detect($email) : null);
         $this->rc->output->send();
     }
 
     public function action_password()
     {
-        $current = rcube_utils::get_input_string('_curpass', rcube_utils::INPUT_POST, true);
-        $new = rcube_utils::get_input_string('_newpass', rcube_utils::INPUT_POST, true);
-        $name = $_SESSION['accounts']['user'] ?? '';
+        $error = $this->rc->check_request()
+            ? $this->api_password(rcube_utils::get_input_string('_curpass', rcube_utils::INPUT_POST, true), rcube_utils::get_input_string('_newpass', rcube_utils::INPUT_POST, true))
+            : $this->gettext('invalidrequest');
 
-        try {
-            if (!$this->rc->check_request() || !$this->store()->user_verify($name, $current)) {
-                throw new \InvalidArgumentException($this->gettext('wrongpassword'));
-            }
-            $this->store()->user_set_password($this->app_user(), $new);
-            $this->rc->output->show_message('successfullysaved', 'confirmation');
-        } catch (\InvalidArgumentException $e) {
-            $this->rc->output->show_message($e->getMessage(), 'error');
-        }
+        $error ? $this->rc->output->show_message($error, 'error') : $this->rc->output->show_message('successfullysaved', 'confirmation');
 
         $this->action_index();
+    }
+
+    // ---- API: used by the settings page above and by api.php -----------
+
+    /**
+     * @return array{user: string, current: int, mailboxes: array}
+     */
+    public function api_state(): array
+    {
+        $boxes = array_map(static fn ($b) => [
+            'id' => (int) $b['mailbox_id'],
+            'label' => (string) $b['label'],
+            'email' => (string) $b['email'],
+            'imap_host' => (string) $b['imap_host'],
+            'smtp_host' => (string) $b['smtp_host'],
+            'default' => (bool) $b['is_default'],
+        ], $this->store()->mailboxes($this->app_user()));
+
+        return ['user' => (string) ($_SESSION['accounts']['user'] ?? ''), 'current' => (int) ($_SESSION['accounts']['box'] ?? 0), 'mailboxes' => $boxes];
+    }
+
+    /**
+     * @return array|null imap_host, smtp_host, imap_user or null if nothing was found
+     */
+    public function api_detect(string $email): ?array
+    {
+        if (!filter_var($email, \FILTER_VALIDATE_EMAIL) || !($result = $this->autoconfig()->lookup($email))) {
+            return null;
+        }
+
+        $config = rcube_autoconfig::to_config($result);
+
+        return [
+            'imap_host' => $config['imap_host'],
+            'smtp_host' => $config['smtp_host'],
+            'imap_user' => $result['username'] === 'localpart' ? strstr($email, '@', true) : $email,
+        ];
+    }
+
+    /**
+     * @param array $box email, imap_host, imap_pass, [imap_user, smtp_host, label]
+     *
+     * @return string|null error message, null if the mailbox was added
+     */
+    public function api_add(array $box): ?string
+    {
+        $box['imap_user'] = $box['imap_user'] ?: $box['email'];
+
+        if (!filter_var($box['email'], \FILTER_VALIDATE_EMAIL) || $box['imap_host'] === '' || $box['imap_pass'] === '') {
+            return $this->gettext('missingfields');
+        }
+        if (!$this->host_allowed($box['imap_host']) || ($box['smtp_host'] !== '' && !$this->host_allowed($box['smtp_host']))) {
+            return $this->gettext('hostnotallowed');
+        }
+        if ($error = \accounts_store::check_imap($box['imap_host'], $box['imap_user'], $box['imap_pass'])) {
+            return $this->gettext('connectfailed') . ': ' . $error;
+        }
+
+        $this->store()->mailbox_add($this->app_user(), $box);
+
+        return null;
+    }
+
+    public function api_remove(int $id): bool
+    {
+        return $this->store()->mailbox_delete($id, $this->app_user());
+    }
+
+    public function api_default(int $id): void
+    {
+        $this->store()->mailbox_set_default($id, $this->app_user());
+    }
+
+    /**
+     * Sign in to another mailbox of the same account. On success the session is a new one.
+     *
+     * @return string|null error message, null on success
+     */
+    public function api_switch(int $id): ?string
+    {
+        $app = $this->app_user();
+        $name = $_SESSION['accounts']['user'] ?? '';
+        $box = $app ? $this->store()->mailbox($id, $app) : null;
+
+        if (!$box) {
+            return $this->gettext('invalidrequest');
+        }
+
+        // check first, so a wrong password does not end the current session
+        if ($error = \accounts_store::check_imap($box['imap_host'], $box['imap_user'], $box['imap_pass'])) {
+            return $this->gettext('connectfailed') . ': ' . $error;
+        }
+
+        $this->switching = ['box' => $box];
+        $this->rc->kill_session();
+
+        if (!$this->rc->login($box['imap_user'], $box['imap_pass'], $box['imap_host'])) {
+            return $this->gettext('connectfailed');
+        }
+
+        $this->rc->session->remove('temp');
+        $this->rc->session->regenerate_id(false);
+        $this->rc->session->set_auth_cookie();
+        $this->remember(['user_id' => $app, 'username' => $name], $box);
+        $this->rc->log_login();
+
+        return null;
+    }
+
+    public function api_password(string $current, string $new): ?string
+    {
+        try {
+            if (!$this->store()->user_verify($_SESSION['accounts']['user'] ?? '', $current)) {
+                return $this->gettext('wrongpassword');
+            }
+            $this->store()->user_set_password($this->app_user(), $new);
+        } catch (\InvalidArgumentException $e) {
+            return $e->getMessage();
+        }
+
+        return null;
     }
 
     public function page()

@@ -1,0 +1,61 @@
+/* Glennski design tokens. Plain CSS, no build step, shared by the web interface (frontend/) and the installer.
+   Colours are RGB channels so that both `rgb(var(--surface))` and `rgb(var(--accent) / .5)` work.
+   Light is the default; dark follows the system unless <html data-theme="light|dark"> says otherwise. */
+
+@font-face {
+    font-family: "Plus Jakarta Sans Variable"; font-style: normal; font-weight: 200 800; font-display: swap;
+    src: url("./fonts/plus-jakarta-sans-latin-ext.woff2") format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+    font-family: "Plus Jakarta Sans Variable"; font-style: normal; font-weight: 200 800; font-display: swap;
+    src: url("./fonts/plus-jakarta-sans-latin.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+    color-scheme: light;
+    --font-sans: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    /* surfaces, from the page background up to cards */
+    --surface: 249 249 251; --surface-bright: 249 249 251; --surface-dim: 217 218 220; --surface-variant: 226 226 228;
+    --surface-container-lowest: 255 255 255; --surface-container-low: 243 243 245; --surface-container: 238 238 240;
+    --surface-container-high: 232 232 234; --surface-container-highest: 226 226 228;
+    /* text and lines */
+    --on-surface: 26 28 29; --on-surface-variant: 68 71 72; --secondary: 94 94 99; --outline: 116 120 120; --outline-variant: 196 199 199;
+    --secondary-fixed: 227 226 231; --on-secondary-fixed: 26 27 31;
+    /* the one strong colour (buttons, marks) and the blue accent (focus, unread dot, notes) */
+    --primary: 0 0 0; --on-primary: 255 255 255; --accent: 43 130 244; --accent-soft: 230 240 254;
+    /* states */
+    --error: 186 26 26; --error-container: 255 218 214; --on-error-container: 147 0 10; --ok: 15 138 95; --star: 242 163 15;
+
+    --radius-sm: .5rem; --radius-md: .75rem; --radius-lg: 1rem;
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / .06);
+    --shadow-pop: 0 10px 30px rgb(0 0 0 / .12);
+    --shadow-modal: 0 24px 64px rgb(0 0 0 / .25);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --surface: 18 19 20; --surface-bright: 40 41 43; --surface-dim: 14 15 16; --surface-variant: 60 62 64;
+        --surface-container-lowest: 12 13 14; --surface-container-low: 24 25 27; --surface-container: 30 31 33;
+        --surface-container-high: 38 39 41; --surface-container-highest: 48 49 52;
+        --on-surface: 232 232 234; --on-surface-variant: 196 199 199; --secondary: 168 168 174; --outline: 140 144 144; --outline-variant: 68 71 72;
+        --secondary-fixed: 58 58 64; --on-secondary-fixed: 227 226 231;
+        --primary: 245 245 247; --on-primary: 20 20 22; --accent: 92 160 255; --accent-soft: 24 40 66;
+        --error: 255 150 140; --error-container: 70 28 26; --on-error-container: 255 218 214; --ok: 79 212 156; --star: 246 185 59;
+    }
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface: 18 19 20; --surface-bright: 40 41 43; --surface-dim: 14 15 16; --surface-variant: 60 62 64;
+    --surface-container-lowest: 12 13 14; --surface-container-low: 24 25 27; --surface-container: 30 31 33;
+    --surface-container-high: 38 39 41; --surface-container-highest: 48 49 52;
+    --on-surface: 232 232 234; --on-surface-variant: 196 199 199; --secondary: 168 168 174; --outline: 140 144 144; --outline-variant: 68 71 72;
+    --secondary-fixed: 58 58 64; --on-secondary-fixed: 227 226 231;
+    --primary: 245 245 247; --on-primary: 20 20 22; --accent: 92 160 255; --accent-soft: 24 40 66;
+    --error: 255 150 140; --error-container: 70 28 26; --on-error-container: 255 218 214; --ok: 79 212 156; --star: 246 185 59;
+}

@@ -8,7 +8,7 @@ import { closeDialog, deleteIdentity, openCompose, saveIdentity, saveSettings, s
 
 const errorText = (e) => (e && e.message) || t('common.error');
 
-const card = 'card-form grid gap-4 rounded-xl bg-surface-container-low p-4';
+const card = 'card-form';
 const listCard = 'list-card flex flex-wrap items-center gap-3 rounded-xl bg-surface-container-low p-3';
 const grid2 = 'grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3.5';
 const muted = 'text-body-sm text-secondary';
@@ -16,9 +16,9 @@ const pill = 'rounded-full bg-surface-container-highest px-2 py-0.5 text-label-s
 
 function Segmented({ value, options, onChange, label }) {
     return (
-        <div className="inline-flex gap-0.5 rounded-lg bg-surface-container-low p-0.5" role="radiogroup" aria-label={label}>
+        <div className="segmented" role="radiogroup" aria-label={label}>
             {options.map(([v, text]) => (
-                <button type="button" key={v} role="radio" aria-checked={value === v} className={cx('rounded-md px-3.5 py-1.5 text-label-md transition-all', value === v ? 'bg-surface-container-lowest text-on-surface shadow-sm' : 'text-secondary hover:text-on-surface')} onClick={() => onChange(v)}>{text}</button>
+                <button type="button" key={v} role="radio" aria-checked={value === v} onClick={() => onChange(v)}>{text}</button>
             ))}
         </div>
     );
@@ -427,7 +427,7 @@ function About() {
 
     return (
         <div className="grid justify-items-start gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-on-primary" aria-hidden="true"><Icon name="mail" size={18} /></div>
+            <div className="brand-mark" aria-hidden="true"><Icon name="mail" size={18} /></div>
             <h3 className="text-headline-md">{session.product || 'Webmail'}</h3>
             <p className="text-secondary">{t('about.text')}</p>
             <p>{t('about.version')}: <strong>{session.version || '—'}</strong></p>

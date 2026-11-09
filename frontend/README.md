@@ -23,3 +23,19 @@ The typeface (Plus Jakarta Sans) is bundled by the build.
 
 `tests/e2e/ui_test.py` finds elements by role/aria label and a few marker classes (`row`, `row-main`, `compose`,
 `message`, `banner`, `bulk-bar`, `chip-addr`, `list-card`, ...). Keep them when restyling.
+
+## Design system (`public/design/`)
+
+Framework-free CSS that both the web interface and the installer (`installer/firstrun.php`) load from
+`/app/design/`. Open `app/design/index.html` in a running install to see every primitive in light and dark.
+
+* `tokens.css` - the Plus Jakarta Sans font faces, colours (as RGB channels), radii and shadows. Light by default,
+  dark by system setting or `<html data-theme>`. Tailwind reads the same variables (`tailwind.config.js`), so there is
+  one definition of every colour.
+* `primitives.css` - `btn` (`btn-primary`, `btn-danger`), `icon-btn`, `input`, `field`, `hint`, `status`, `chip`,
+  `kbd`, `code`, `caps`, `menu-item`, `alert-error`, `brand-mark`, `card`, `card-form`, `segmented`, `tile`.
+  A primitive owns colour, shape, type and states; layout is the page's job (Tailwind in the app, a few lines of
+  CSS in the installer).
+
+New screen, new page, plugin: link both files and use these classes before inventing new ones. If a look is needed
+twice, add it as a primitive here (and to the gallery), not to a page.

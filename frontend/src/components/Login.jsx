@@ -35,7 +35,7 @@ export function Login() {
     return (
         <main className="grid h-full place-items-center overflow-auto p-6">
             <section className="grid w-full max-w-[380px] gap-5">
-                <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-on-primary" aria-hidden="true"><Icon name="mail" size={18} /></div>
+                <div className="brand-mark" aria-hidden="true"><Icon name="mail" size={18} /></div>
                 <div className="grid gap-1">
                     <h1 className="text-headline-lg">{t('login.title')}</h1>
                     <p className="text-body-lg text-secondary">{t(multi ? 'login.subtitle.multi' : 'login.subtitle.single')}</p>

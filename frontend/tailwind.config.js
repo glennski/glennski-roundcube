@@ -1,5 +1,6 @@
 import containerQueries from "@tailwindcss/container-queries";
-// Design tokens taken from the "Aether" mockup. Colours are CSS variables (see src/index.css) so that
+// Maps Tailwind onto the shared design tokens (public/design/tokens.css, from the "Aether" mockup). Colours are
+// CSS variables so that
 // light, dark and the user's theme setting need no dark: variants.
 const c = (name) => `rgb(var(--${name}) / <alpha-value>)`;
 const names = [
@@ -16,7 +17,7 @@ export default {
             colors: Object.fromEntries(names.map((n) => [n, c(n)])),
             borderRadius: { DEFAULT: '0.25rem', lg: '0.5rem', xl: '0.75rem', '2xl': '1rem' },
             spacing: { 'space-xs': '0.25rem', 'space-sm': '0.5rem', 'space-md': '0.875rem', 'space-lg': '1.25rem', 'space-xl': '2rem', gutter: '1.5rem', margin: '2.5rem' },
-            fontFamily: { sans: ['"Plus Jakarta Sans Variable"', 'ui-sans-serif', 'system-ui', '-apple-system', '"Segoe UI"', 'Roboto', 'sans-serif'] },
+            fontFamily: { sans: ['var(--font-sans)'], mono: ['var(--font-mono)'] },
             fontSize: {
                 'label-sm': ['11px', { lineHeight: '14px', letterSpacing: '0.02em', fontWeight: '500' }],
                 'label-md': ['12px', { lineHeight: '16px', letterSpacing: '0.01em', fontWeight: '500' }],

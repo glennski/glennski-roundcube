@@ -1,0 +1,92 @@
+/* Glennski primitives: the small set of building blocks every screen is made of.
+   Plain CSS on top of tokens.css, no framework. Used by the web interface (together with Tailwind for layout)
+   and by the installer. Rule of thumb: a primitive owns colour, shape, type and states; layout stays with the page. */
+
+:root { --focus-ring: 0 0 0 2px rgb(var(--accent) / .5); }
+
+/* ---- buttons ---------------------------------------------------------------------------- */
+.btn, .icon-btn, .chip, .menu-item, .segmented > *, .tile { font-family: inherit; }
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border: 0; border-radius: var(--radius-sm);
+    background: rgb(var(--surface-container-low)); color: rgb(var(--on-surface)); padding: .5rem .875rem;
+    font-size: 13.5px; line-height: 20px; font-weight: 500; letter-spacing: -.005em; text-decoration: none; cursor: pointer;
+    transition: background-color .15s, opacity .15s;
+}
+.btn:hover { background: rgb(var(--surface-container)); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-primary { background: rgb(var(--primary)); color: rgb(var(--on-primary)); }
+.btn-primary:hover { background: rgb(var(--primary) / .9); }
+.btn-danger { background: transparent; color: rgb(var(--error)); }
+.btn-danger:hover { background: rgb(var(--error-container) / .6); }
+
+.icon-btn {
+    display: grid; place-items: center; flex: none; width: 2rem; height: 2rem; padding: 0; border: 0; border-radius: var(--radius-sm);
+    background: transparent; color: rgb(var(--secondary)); cursor: pointer; text-decoration: none; transition: background-color .15s, color .15s;
+}
+.icon-btn:hover { background: rgb(var(--surface-container)); color: rgb(var(--on-surface)); }
+.icon-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ---- form fields ------------------------------------------------------------------------ */
+.input {
+    width: 100%; min-height: 2.5rem; padding: .5rem .75rem; border: 1px solid transparent; border-radius: var(--radius-sm); outline: none;
+    background: rgb(var(--surface-container-low)); color: rgb(var(--on-surface)); font: inherit; font-size: 13.5px; line-height: 20px;
+    transition: background-color .15s, border-color .15s;
+}
+.input::placeholder { color: rgb(var(--outline)); }
+.input:focus { background: rgb(var(--surface-container-lowest)); border-color: rgb(var(--outline-variant)); }
+.field { display: grid; align-content: start; gap: .375rem; }
+.field > span:first-child, .field > label:first-child { font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: .01em; color: rgb(var(--on-surface-variant)); }
+.hint { margin: 0; font-size: 12px; line-height: 18px; color: rgb(var(--secondary)); }
+.status { min-height: 1.3em; margin: 0; font-size: 12px; line-height: 18px; color: rgb(var(--secondary)); }
+.status.ok { color: rgb(var(--ok)); }
+.status.bad { color: rgb(var(--error)); }
+
+/* ---- small things ----------------------------------------------------------------------- */
+.chip {
+    display: inline-flex; align-items: center; gap: .375rem; padding: .25rem .75rem; border: 0; border-radius: 999px; background: transparent;
+    font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: .01em; color: rgb(var(--secondary)); cursor: pointer;
+    transition: background-color .15s, color .15s;
+}
+.chip:hover { background: rgb(var(--surface-container)); color: rgb(var(--on-surface)); }
+.chip-on { background: rgb(var(--surface-container-highest)); color: rgb(var(--on-surface)); }
+.kbd { padding: .125rem .375rem; border-radius: .25rem; background: rgb(var(--surface-container)); font: 600 10px var(--font-mono); color: rgb(var(--secondary)); }
+.code { padding: .125rem .375rem; border-radius: .25rem; background: rgb(var(--surface-container)); font-family: var(--font-mono); font-size: .9em; }
+.caps { font-size: 11px; line-height: 14px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: rgb(var(--secondary)); }
+.menu-item {
+    display: flex; align-items: center; gap: .625rem; width: 100%; padding: .375rem .625rem; border: 0; border-radius: var(--radius-sm);
+    background: transparent; color: rgb(var(--on-surface)); font-size: 13.5px; line-height: 20px; font-weight: 500; text-align: left; cursor: pointer;
+}
+.menu-item:hover:not(:disabled) { background: rgb(var(--surface-container-high)); }
+.menu-item:disabled { opacity: .5; }
+.alert-error { padding: .625rem .875rem; border-radius: var(--radius-sm); background: rgb(var(--error-container)); color: rgb(var(--on-error-container)); font-size: 13.5px; line-height: 20px; }
+.brand-mark { display: inline-grid; place-items: center; flex: none; width: 2.25rem; height: 2.25rem; border-radius: var(--radius-sm); background: rgb(var(--primary)); color: rgb(var(--on-primary)); }
+.brand-mark-lg { width: 3rem; height: 3rem; border-radius: var(--radius-md); }
+
+/* ---- containers ------------------------------------------------------------------------- */
+.card { padding: 1.5rem; border-radius: var(--radius-lg); background: rgb(var(--surface-container-lowest)); box-shadow: var(--shadow-sm); }
+.card-form { display: grid; gap: 1rem; padding: 1rem; border-radius: var(--radius-md); background: rgb(var(--surface-container-low)); }
+
+/* a group of options where one is on: <div class="segmented"> with buttons (aria-checked / .on) or labels around radio inputs */
+.segmented { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 2px; border-radius: var(--radius-sm); background: rgb(var(--surface-container-low)); }
+.segmented > * {
+    position: relative; margin: 0; padding: .375rem .875rem; border: 0; border-radius: .375rem; background: transparent; color: rgb(var(--secondary));
+    font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: .01em; cursor: pointer; transition: background-color .15s, color .15s;
+}
+.segmented > *:hover { color: rgb(var(--on-surface)); }
+.segmented > .on, .segmented > [aria-checked="true"], .segmented > *:has(input:checked) { background: rgb(var(--surface-container-lowest)); color: rgb(var(--on-surface)); box-shadow: var(--shadow-sm); }
+.segmented input { position: absolute; opacity: 0; pointer-events: none; }
+
+/* a large selectable card: <label class="tile"><input type="radio">...</label> */
+.tile {
+    position: relative; display: block; padding: 1.5rem; border: 2px solid transparent; border-radius: var(--radius-lg); cursor: pointer;
+    background: rgb(var(--surface-container-low)); transition: border-color .15s, background-color .15s;
+}
+.tile:hover { border-color: rgb(var(--outline-variant)); }
+.tile.on, .tile:has(input:checked) { border-color: rgb(var(--primary)); background: rgb(var(--surface-container-lowest)); }
+.tile input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+/* ---- focus ------------------------------------------------------------------------------ */
+.btn:focus-visible, .icon-btn:focus-visible, .chip:focus-visible, .menu-item:focus-visible, .segmented > *:focus-visible,
+.segmented > *:has(input:focus-visible), .tile:has(input:focus-visible) { outline: none; box-shadow: var(--focus-ring); }
+
+@media (prefers-reduced-motion: reduce) { .btn, .icon-btn, .input, .chip, .segmented > *, .tile { transition: none; } }

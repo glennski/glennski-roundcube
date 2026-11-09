@@ -24,7 +24,7 @@ header('Content-Type: text/html; charset=UTF-8');
 header('Cache-Control: no-store');
 header('X-Frame-Options: DENY');
 header('Referrer-Policy: no-referrer');
-header("Content-Security-Policy: default-src 'none'; style-src 'nonce-{$nonce}'; script-src 'nonce-{$nonce}'; connect-src 'self'; form-action 'self'; base-uri 'none'");
+header("Content-Security-Policy: default-src 'none'; style-src 'self' 'nonce-{$nonce}'; font-src 'self'; script-src 'nonce-{$nonce}'; connect-src 'self'; form-action 'self'; base-uri 'none'");
 
 if (empty($_SESSION['firstrun_token'])) {
     $_SESSION['firstrun_token'] = rcube_utils::random_bytes(24);
@@ -138,78 +138,51 @@ $val = static fn (string $name) => $q($_POST[$name] ?? '');
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title><?php echo $t('Set up your webmail', 'Webmail einrichten'); ?></title>
+<link rel="stylesheet" href="app/design/tokens.css">
+<link rel="stylesheet" href="app/design/primitives.css">
 <style nonce="<?php echo $nonce; ?>">
-:root {
-  --bg: #f4f6fb; --card: #fff; --ink: #172033; --muted: #5d6b82; --line: #dfe5ef;
-  --brand: #2f6bff; --brand-ink: #fff; --brand-soft: #eaf0ff; --danger: #b42318; --danger-soft: #fef0ee; --ok: #0a7a4d; --ok-soft: #e7f7ef;
-  --radius: 16px; --shadow: 0 1px 2px rgba(23,32,51,.06), 0 12px 32px rgba(23,32,51,.08);
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0d1220; --card: #151c2e; --ink: #e8ecf5; --muted: #98a4bb; --line: #263049;
-    --brand: #6b92ff; --brand-ink: #0b1226; --brand-soft: #1c2a4f; --danger: #ff8f84; --danger-soft: #3a1d1b; --ok: #4fd49c; --ok-soft: #12302a;
-    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.35);
-  }
-}
+/* page layout only; colours, buttons, fields and tiles come from app/design/ (frontend/public/design) */
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-html { color-scheme: light dark; }
-body { margin: 0; min-height: 100vh; background: radial-gradient(1200px 500px at 50% -10%, var(--brand-soft), transparent), var(--bg);
-  color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-main { max-width: 880px; margin: 0 auto; padding: 48px 16px 64px; }
-header { text-align: center; margin-bottom: 32px; }
-.mark { width: 56px; height: 56px; border-radius: 16px; background: var(--brand); color: var(--brand-ink); display: inline-grid; place-items: center; box-shadow: var(--shadow); }
-h1 { font-size: clamp(1.6rem, 4vw, 2.2rem); line-height: 1.2; margin: 16px 0 8px; letter-spacing: -.02em; }
-.lead { color: var(--muted); margin: 0 auto; max-width: 52ch; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px; }
-.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
-.tile { position: relative; display: block; cursor: pointer; background: var(--card); border: 2px solid var(--line); border-radius: var(--radius); padding: 24px; transition: border-color .15s, box-shadow .15s, transform .15s; }
-.tile:hover { border-color: var(--brand); transform: translateY(-2px); }
-.tile input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
-.tile.on, .tile:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 18%, transparent); }
-.tile:has(input:focus-visible) { outline: 3px solid var(--brand); outline-offset: 3px; }
-.tile svg { color: var(--brand); }
-.tile h2 { font-size: 1.15rem; margin: 12px 0 4px; }
-.tile p { color: var(--muted); margin: 0 0 12px; font-size: .95rem; }
-.tile ul { list-style: none; margin: 0; padding: 0; font-size: .9rem; }
+body { margin: 0; min-height: 100vh; background: rgb(var(--surface)); color: rgb(var(--on-surface)); font: 14px/1.55 var(--font-sans); -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+main { max-width: 760px; margin: 0 auto; padding: 56px 16px 64px; }
+header { margin-bottom: 32px; }
+h1 { font-size: clamp(1.6rem, 4vw, 1.75rem); line-height: 1.25; margin: 20px 0 8px; letter-spacing: -.02em; font-weight: 600; }
+h2 { font-size: 1.05rem; line-height: 1.4; margin: 12px 0 4px; font-weight: 600; letter-spacing: -.01em; }
+h3 { font-size: 1rem; margin: 0 0 12px; font-weight: 600; letter-spacing: -.01em; }
+.lead { color: rgb(var(--secondary)); margin: 0; max-width: 52ch; font-size: 15px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin: 0 0 24px; padding: 0; border: 0; }
+.tile svg { color: rgb(var(--primary)); }
+.tile p { color: rgb(var(--secondary)); margin: 0 0 12px; }
+.tile ul { list-style: none; margin: 0; padding: 0; font-size: 13px; }
 .tile li { padding-left: 22px; position: relative; margin: 4px 0; }
-.tile li::before { content: ""; position: absolute; left: 2px; top: .45em; width: 10px; height: 6px; border-left: 2px solid var(--ok); border-bottom: 2px solid var(--ok); transform: rotate(-45deg); }
+.tile li::before { content: ""; position: absolute; left: 2px; top: .45em; width: 10px; height: 6px; border-left: 2px solid rgb(var(--ok)); border-bottom: 2px solid rgb(var(--ok)); transform: rotate(-45deg); }
 .panel { display: none; }
 .panel.on { display: block; animation: rise .25s ease-out; }
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .panel.on { animation: none; } .tile { transition: none; } }
-h3 { font-size: 1rem; margin: 0 0 12px; }
+@media (prefers-reduced-motion: reduce) { .panel.on { animation: none; } }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-label, .label { font-weight: 600; font-size: .9rem; }
-input[type=text], input[type=email], input[type=password] { width: 100%; font: inherit; color: inherit; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; }
-input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid color-mix(in srgb, var(--brand) 45%, transparent); outline-offset: 1px; border-color: var(--brand); }
-.hint { color: var(--muted); font-size: .85rem; margin: 0; }
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 12px; padding: 4px; gap: 4px; margin-bottom: 20px; flex-wrap: wrap; }
-.seg label { margin: 0; font-weight: 500; padding: 8px 14px; border-radius: 9px; cursor: pointer; }
-.seg input { position: absolute; opacity: 0; }
-.seg label:has(input:checked) { background: var(--brand); color: var(--brand-ink); }
-.seg label:has(input:focus-visible) { outline: 3px solid color-mix(in srgb, var(--brand) 45%, transparent); }
+.field { margin-bottom: 16px; }
+.segmented { margin-bottom: 20px; }
 .row { display: flex; gap: 8px; align-items: stretch; }
-.row input { flex: 1; }
-button, .btn { font: inherit; font-weight: 600; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: inherit; padding: 11px 18px; cursor: pointer; text-decoration: none; display: inline-block; }
-button.primary, .btn.primary { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
-button:disabled { opacity: .6; cursor: progress; }
-.status { font-size: .85rem; min-height: 1.3em; margin: 0 0 12px; }
-.status.ok { color: var(--ok); } .status.bad { color: var(--danger); }
-.alert { border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; background: var(--danger-soft); color: var(--danger); border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent); }
-.done { text-align: center; } .done .tick { width: 56px; height: 56px; border-radius: 50%; background: var(--ok-soft); color: var(--ok); display: inline-grid; place-items: center; }
-code { background: var(--brand-soft); padding: 2px 6px; border-radius: 6px; }
+.row .input { flex: 1; }
+.row.detect { margin-bottom: 8px; }
+.narrow { max-width: 420px; }
+.alert-error { margin-bottom: 20px; }
+.done { text-align: center; display: grid; justify-items: center; gap: 8px; }
+.done .tick { width: 3rem; height: 3rem; border-radius: 50%; background: rgb(var(--ok) / .15); color: rgb(var(--ok)); display: inline-grid; place-items: center; }
+.done p { margin: 0 0 8px; }
 .actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
-.lang { text-align: center; margin-top: 24px; font-size: .85rem; } .lang a { color: var(--muted); }
-details summary { cursor: pointer; color: var(--muted); font-size: .9rem; margin-bottom: 12px; }
+.lang { text-align: center; margin-top: 32px; font-size: 12px; } .lang a { color: rgb(var(--secondary)); }
+details summary { cursor: pointer; color: rgb(var(--secondary)); font-size: 13px; margin-bottom: 12px; }
+hr { border: 0; border-top: 1px solid rgb(var(--outline-variant) / .5); margin: 8px 0 20px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 </style>
 </head>
 <body>
 <main>
 <header>
-  <span class="mark" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 8 8 6 8-6"/></svg></span>
+  <span class="brand-mark brand-mark-lg" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 8 8 6 8-6"/></svg></span>
   <h1><?php echo $t('Set up your webmail', 'Richte dein Webmail ein'); ?></h1>
   <p class="lead"><?php echo $t('Two questions, then you are ready to go. You can change this later by deleting the setup file.', 'Zwei Fragen, dann kann es losgehen. Du kannst das später ändern, indem du die Setup-Datei löschst.'); ?></p>
 </header>
@@ -218,28 +191,28 @@ details summary { cursor: pointer; color: var(--muted); font-size: .9rem; margin
   <section class="card done" role="status">
     <h2><?php echo $t('Setup is already done', 'Die Einrichtung ist bereits abgeschlossen'); ?></h2>
     <p class="hint"><?php echo $t('The installer is disabled for this installation.', 'Der Installer ist für diese Installation deaktiviert.'); ?></p>
-    <a class="btn primary" href="./"><?php echo $t('Open webmail', 'Webmail öffnen'); ?></a>
+    <a class="btn btn-primary" href="./"><?php echo $t('Open webmail', 'Webmail öffnen'); ?></a>
   </section>
 <?php } elseif ($saved) { ?>
   <section class="card done" role="status">
     <span class="tick" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span>
     <h2><?php echo $t('All set', 'Alles bereit'); ?></h2>
     <?php if ($saved['mode'] === 'multi') { ?>
-      <p><?php echo $t('Sign in with your account', 'Melde dich mit deinem Konto an'); ?> <code><?php echo $q($saved['user']); ?></code>. <?php echo $t('Add more mailboxes under Settings → Accounts.', 'Weitere Postfächer fügst du unter Einstellungen → Konten hinzu.'); ?></p>
+      <p><?php echo $t('Sign in with your account', 'Melde dich mit deinem Konto an'); ?> <code class="code"><?php echo $q($saved['user']); ?></code>. <?php echo $t('Add more mailboxes under Settings → Accounts.', 'Weitere Postfächer fügst du unter Einstellungen → Konten hinzu.'); ?></p>
     <?php } elseif (($saved['imap_host'] ?? '') === '') { ?>
       <p><?php echo $t('Sign in with any email address. The mail servers are detected automatically.', 'Melde dich mit einer beliebigen E-Mail-Adresse an. Die Mailserver werden automatisch erkannt.'); ?></p>
     <?php } else { ?>
       <p><?php echo $t('Sign in with the email address and password of your mailbox.', 'Melde dich mit E-Mail-Adresse und Passwort deines Postfachs an.'); ?></p>
     <?php } ?>
-    <a class="btn primary" href="./"><?php echo $t('Open webmail', 'Webmail öffnen'); ?></a>
+    <a class="btn btn-primary" href="./"><?php echo $t('Open webmail', 'Webmail öffnen'); ?></a>
   </section>
 <?php } else { ?>
 <form method="post" action="installer.php<?php echo $lang !== 'en' ? '?lang=' . $q($lang) : ''; ?>" id="setup" novalidate>
   <input type="hidden" name="_token" value="<?php echo $q($_SESSION['firstrun_token']); ?>">
 
-  <?php if ($error) { ?><div class="alert" role="alert"><?php echo $q($error); ?></div><?php } ?>
+  <?php if ($error) { ?><div class="alert-error" role="alert"><?php echo $q($error); ?></div><?php } ?>
 
-  <fieldset class="tiles" style="border:0;padding:0;margin:0 0 24px">
+  <fieldset class="tiles">
     <legend class="sr"><?php echo $t('How will you use it?', 'Wie möchtest du es nutzen?'); ?></legend>
     <label class="tile">
       <input type="radio" name="_mode" value="single"<?php echo $checked($mode === 'single'); ?>>
@@ -266,7 +239,7 @@ details summary { cursor: pointer; color: var(--muted); font-size: .9rem; margin
   <!-- single -->
   <section class="card panel" id="panel-single" aria-labelledby="h-single">
     <h3 id="h-single"><?php echo $t('Which mailboxes may sign in?', 'Welche Postfächer dürfen sich anmelden?'); ?></h3>
-    <div class="seg" role="radiogroup">
+    <div class="segmented" role="radiogroup">
       <label><input type="radio" name="_scope" value="one"<?php echo $checked($scope === 'one'); ?>><?php echo $t('Only this mailbox', 'Nur dieses Postfach'); ?></label>
       <label><input type="radio" name="_scope" value="any"<?php echo $checked($scope === 'any'); ?>><?php echo $t('Any address (detect at login)', 'Jede Adresse (Erkennung beim Login)'); ?></label>
     </div>
@@ -275,14 +248,14 @@ details summary { cursor: pointer; color: var(--muted); font-size: .9rem; margin
       <div class="field">
         <label for="s-email"><?php echo $t('Email address', 'E-Mail-Adresse'); ?></label>
         <div class="row">
-          <input type="email" id="s-email" name="_email" autocomplete="email" placeholder="you@example.com" value="<?php echo $val('_email'); ?>">
-          <button type="button" data-detect="s"><?php echo $t('Detect servers', 'Server erkennen'); ?></button>
+          <input class="input" type="email" id="s-email" name="_email" autocomplete="email" placeholder="you@example.com" value="<?php echo $val('_email'); ?>">
+          <button type="button" class="btn" data-detect="s"><?php echo $t('Detect servers', 'Server erkennen'); ?></button>
         </div>
       </div>
       <p class="status" id="s-status" aria-live="polite"></p>
       <div class="grid">
-        <div class="field"><label for="s-imap">IMAP</label><input type="text" id="s-imap" name="_imap_host" placeholder="ssl://imap.example.com:993" value="<?php echo $val('_imap_host'); ?>"></div>
-        <div class="field"><label for="s-smtp">SMTP</label><input type="text" id="s-smtp" name="_smtp_host" placeholder="tls://smtp.example.com:587" value="<?php echo $val('_smtp_host'); ?>"></div>
+        <div class="field"><label for="s-imap">IMAP</label><input class="input" type="text" id="s-imap" name="_imap_host" placeholder="ssl://imap.example.com:993" value="<?php echo $val('_imap_host'); ?>"></div>
+        <div class="field"><label for="s-smtp">SMTP</label><input class="input" type="text" id="s-smtp" name="_smtp_host" placeholder="tls://smtp.example.com:587" value="<?php echo $val('_smtp_host'); ?>"></div>
       </div>
       <input type="hidden" id="s-domain" name="_domain" value="<?php echo $val('_domain'); ?>">
       <p class="hint"><?php echo $t('Use ssl:// for port 993/465 and tls:// for STARTTLS on 143/587.', 'Nutze ssl:// für Port 993/465 und tls:// für STARTTLS auf 143/587.'); ?></p>
@@ -293,32 +266,32 @@ details summary { cursor: pointer; color: var(--muted); font-size: .9rem; margin
   <!-- multi -->
   <section class="card panel" id="panel-multi" aria-labelledby="h-multi">
     <h3 id="h-multi"><?php echo $t('Your account', 'Dein Konto'); ?></h3>
-    <div class="field" style="max-width:420px"><label for="m-user"><?php echo $t('User name', 'Benutzername'); ?></label><input type="text" id="m-user" name="_admin_user" autocomplete="username" value="<?php echo $val('_admin_user'); ?>"></div>
+    <div class="field narrow"><label for="m-user"><?php echo $t('User name', 'Benutzername'); ?></label><input class="input" type="text" id="m-user" name="_admin_user" autocomplete="username" value="<?php echo $val('_admin_user'); ?>"></div>
     <div class="grid">
-      <div class="field"><label for="m-pass"><?php echo $t('Password', 'Passwort'); ?></label><input type="password" id="m-pass" name="_admin_pass" autocomplete="new-password" minlength="8"><p class="hint"><?php echo $t('At least 8 characters', 'Mindestens 8 Zeichen'); ?></p></div>
-      <div class="field"><label for="m-pass2"><?php echo $t('Repeat password', 'Passwort wiederholen'); ?></label><input type="password" id="m-pass2" name="_admin_pass2" autocomplete="new-password"></div>
+      <div class="field"><label for="m-pass"><?php echo $t('Password', 'Passwort'); ?></label><input class="input" type="password" id="m-pass" name="_admin_pass" autocomplete="new-password" minlength="8"><p class="hint"><?php echo $t('At least 8 characters', 'Mindestens 8 Zeichen'); ?></p></div>
+      <div class="field"><label for="m-pass2"><?php echo $t('Repeat password', 'Passwort wiederholen'); ?></label><input class="input" type="password" id="m-pass2" name="_admin_pass2" autocomplete="new-password"></div>
     </div>
-    <hr style="border:0;border-top:1px solid var(--line);margin:8px 0 20px">
+    <hr>
     <h3><?php echo $t('Your first mailbox', 'Dein erstes Postfach'); ?></h3>
     <div class="grid">
-      <div class="field"><label for="m-email"><?php echo $t('Email address', 'E-Mail-Adresse'); ?></label><input type="email" id="m-email" name="_mb_email" autocomplete="email" placeholder="you@example.com" value="<?php echo $val('_mb_email'); ?>"></div>
-      <div class="field"><label for="m-mbpass"><?php echo $t('Mailbox password', 'Postfach-Passwort'); ?></label><input type="password" id="m-mbpass" name="_mb_pass" autocomplete="off"></div>
+      <div class="field"><label for="m-email"><?php echo $t('Email address', 'E-Mail-Adresse'); ?></label><input class="input" type="email" id="m-email" name="_mb_email" autocomplete="email" placeholder="you@example.com" value="<?php echo $val('_mb_email'); ?>"></div>
+      <div class="field"><label for="m-mbpass"><?php echo $t('Mailbox password', 'Postfach-Passwort'); ?></label><input class="input" type="password" id="m-mbpass" name="_mb_pass" autocomplete="off"></div>
     </div>
-    <div class="row" style="margin-bottom:8px"><button type="button" data-detect="m"><?php echo $t('Detect servers', 'Server erkennen'); ?></button></div>
+    <div class="row detect"><button type="button" class="btn" data-detect="m"><?php echo $t('Detect servers', 'Server erkennen'); ?></button></div>
     <p class="status" id="m-status" aria-live="polite"></p>
     <div class="grid">
-      <div class="field"><label for="m-imap">IMAP</label><input type="text" id="m-imap" name="_mb_imap_host" placeholder="ssl://imap.example.com:993" value="<?php echo $val('_mb_imap_host'); ?>"></div>
-      <div class="field"><label for="m-smtp">SMTP</label><input type="text" id="m-smtp" name="_mb_smtp_host" placeholder="tls://smtp.example.com:587" value="<?php echo $val('_mb_smtp_host'); ?>"></div>
+      <div class="field"><label for="m-imap">IMAP</label><input class="input" type="text" id="m-imap" name="_mb_imap_host" placeholder="ssl://imap.example.com:993" value="<?php echo $val('_mb_imap_host'); ?>"></div>
+      <div class="field"><label for="m-smtp">SMTP</label><input class="input" type="text" id="m-smtp" name="_mb_smtp_host" placeholder="tls://smtp.example.com:587" value="<?php echo $val('_mb_smtp_host'); ?>"></div>
     </div>
     <details><summary><?php echo $t('Login name differs from the address?', 'Anmeldename weicht von der Adresse ab?'); ?></summary>
-      <div class="field"><label for="m-imapuser"><?php echo $t('Login name', 'Anmeldename'); ?></label><input type="text" id="m-imapuser" name="_mb_imap_user" value="<?php echo $val('_mb_imap_user'); ?>"></div>
+      <div class="field"><label for="m-imapuser"><?php echo $t('Login name', 'Anmeldename'); ?></label><input class="input" type="text" id="m-imapuser" name="_mb_imap_user" value="<?php echo $val('_mb_imap_user'); ?>"></div>
     </details>
     <p class="hint"><?php echo $t('You can add more mailboxes, also from other providers, under Settings → Accounts.', 'Weitere Postfächer, auch anderer Anbieter, fügst du später unter Einstellungen → Konten hinzu.'); ?></p>
   </section>
 
   <div class="actions" id="actions" hidden>
     <span class="hint"><?php echo $t('The mailbox login is checked before anything is saved.', 'Die Anmeldung am Postfach wird geprüft, bevor etwas gespeichert wird.'); ?></span>
-    <button type="submit" class="primary" id="submit"><?php echo $t('Save and continue', 'Speichern und weiter'); ?></button>
+    <button type="submit" class="btn btn-primary" id="submit"><?php echo $t('Save and continue', 'Speichern und weiter'); ?></button>
   </div>
 </form>
 

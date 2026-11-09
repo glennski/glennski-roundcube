@@ -54,6 +54,12 @@ if ($RCMAIL->config->get_error() || $RCMAIL->db->is_error()) {
     rcmail_fatal_error();
 }
 
+// first run (Docker): no stored server setup yet, let the installer ask for it
+if ($RCMAIL->config->get('setup_required')) {
+    header('Location: installer.php');
+    exit;
+}
+
 // error steps
 if ($RCMAIL->action == 'error' && !empty($_GET['_code'])) {
     rcmail::raise_error(['code' => hexdec($_GET['_code'])], false, true);

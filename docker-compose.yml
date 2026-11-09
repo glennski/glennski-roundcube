@@ -10,7 +10,7 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - roundcube:/var/roundcube
+      - ./data:/var/roundcube
     environment:
       # Fixed servers instead of per-login detection (pick one):
       #   ROUNDCUBE_IMAP_HOST: tls://imap.example.com:143
@@ -20,6 +20,3 @@ services:
       #   ROUNDCUBE_DB_DSN: pgsql://roundcube:secret@db/roundcube
       ROUNDCUBE_PLUGINS: archive,zipdownload
     restart: unless-stopped
-
-volumes:
-  roundcube:

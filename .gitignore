@@ -4,6 +4,10 @@ temp/*
 config/*
 plugins/*/config.inc.php
 
+# persistent data of the Docker setup (database, keys, setup), only the folder is tracked
+data/*
+!data/.gitkeep
+
 # this is for the sample plugin (via composer)
 plugins/rcsample
 plugins/plugin_manager

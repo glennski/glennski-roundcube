@@ -5,3 +5,4 @@ config/config.inc.php
 temp/*
 logs/*
 tests
+data

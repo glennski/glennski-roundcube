@@ -4,8 +4,12 @@
 docker compose up -d        # http://localhost:8080
 ```
 
-Default: SQLite, and the mail servers are detected from the address typed at login
-(`autoconfig` plugin). Data (database, `des_key`, temp, setup) lives in the `/var/roundcube` volume.
+Default: SQLite. On the first visit the browser is sent to the installer, which asks how the mail
+servers are found: detect at every login (`autoconfig` plugin), fixed servers detected once from an
+address/domain, or entered manually. The answer is stored in `/var/roundcube/setup.json`; once it
+exists the installer is disabled. Delete that file to run the choice again.
+Data (database, `des_key`, temp, logs, setup) lives in `./data` (mounted at `/var/roundcube`); its content is git-ignored.
+On Linux the entrypoint sets the owner of that folder to the container user `www-data` (uid 33).
 Build and tag with the current version: `make docker`.
 
 ## Configuration (environment variables)
@@ -15,7 +19,8 @@ Build and tag with the current version: `make docker`.
 | `ROUNDCUBE_IMAP_HOST` | – | Fixed IMAP server, e.g. `tls://imap.example.com:143`. Disables detection |
 | `ROUNDCUBE_SMTP_HOST` | `localhost:587` | Fixed SMTP server (with `IMAP_HOST`) |
 | `ROUNDCUBE_USERNAME_DOMAIN` | – | Domain appended to bare user names (with `IMAP_HOST`) |
-| `ROUNDCUBE_SETUP_EMAIL` / `ROUNDCUBE_SETUP_DOMAIN` | – | Detect fixed servers **once** at start and store them |
+| `ROUNDCUBE_SETUP_MODE` | – | `auto` = detect at login, skips the installer (non-interactive) |
+| `ROUNDCUBE_SETUP_EMAIL` / `ROUNDCUBE_SETUP_DOMAIN` | – | Detect fixed servers **once** at start and store them, skips the installer |
 | `ROUNDCUBE_SETUP_REFRESH` | – | Set to any value to repeat that detection |
 | `ROUNDCUBE_DB_DSN` | SQLite in volume | e.g. `pgsql://user:pass@db/roundcube` |
 | `ROUNDCUBE_DES_KEY` | generated, persisted | Session encryption key |
@@ -25,4 +30,4 @@ Build and tag with the current version: `make docker`.
 | `ROUNDCUBE_TRUSTED_PROXIES` | – | Reverse proxies whose `X-Forwarded-*` is trusted |
 | `ROUNDCUBE_PRODUCT_NAME`, `ROUNDCUBE_SKIN` | `Webmail`, `elastic` | |
 
-Logs go to stdout. The web installer is not part of the image; use the variables above.
+Logs go to stdout. Setting any of `IMAP_HOST`, `SETUP_MODE`, `SETUP_EMAIL` or `SETUP_DOMAIN` skips the installer.

@@ -6,7 +6,7 @@ This file includes only changes we consider noteworthy for users, admins and plu
 
 - Add `autoconfig` plugin and `rcube_autoconfig` class: detect IMAP/SMTP servers from the address typed at login (provider autoconfig, Autodiscover, SRV records RFC 6186/8314, Thunderbird ISP database, MX lookup). Lookups only touch public hosts and require TLS by default
 - Add setup wizard to the web installer and `bin/setup.php`: fixed servers detected once from an address/domain, or detection at every login
-- Add Docker-first deployment: `Dockerfile`, `docker-compose.yml`, configuration via `ROUNDCUBE_*` environment variables (see `docker/README.md`)
+- Add Docker-first deployment: `Dockerfile`, `docker-compose.yml`, configuration via `ROUNDCUBE_*` environment variables (see `docker/README.md`). A fresh container without stored setup sends the browser to the installer (`installer/firstrun.php`) to choose how mail servers are found
 - Add `VERSION` file and `GLENNSKI_VERSION` constant
 
 ## Unreleased

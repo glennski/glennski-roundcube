@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /src
 COPY . .
 RUN make build \
-    && rm -rf node_modules .git tests .ci .github installer public_html/installer.php \
+    && rm -rf node_modules .git tests .ci .github \
               skins/elastic/node_modules plugins/*/node_modules
 
 # ---- runtime ----------------------------------------------------------------

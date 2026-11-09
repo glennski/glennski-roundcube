@@ -12,7 +12,6 @@ $config['des_key'] = $env('DES_KEY', is_readable("{$data}/des_key") ? trim(file_
 $config['temp_dir'] = "{$data}/temp";
 $config['log_dir'] = "{$data}/logs";
 $config['log_driver'] = 'stdout';
-$config['enable_installer'] = false;
 $config['product_name'] = $env('PRODUCT_NAME', 'Webmail');
 $config['skin'] = $env('SKIN', 'elastic');
 $config['plugins'] = array_filter(array_map('trim', explode(',', $env('PLUGINS', 'archive,zipdownload'))));
@@ -23,10 +22,15 @@ if ($env('IMAP_HOST')) {
     $config['smtp_host'] = $env('SMTP_HOST', 'localhost:587');
     $config['username_domain'] = $env('USERNAME_DOMAIN');
 } else {
-    $setup = is_readable("{$data}/setup.json") ? json_decode(file_get_contents("{$data}/setup.json"), true) : [];
+    $setup = is_readable("{$data}/setup.json") ? json_decode(file_get_contents("{$data}/setup.json"), true) : null;
     $config = array_merge($config, array_diff_key((array) $setup, ['plugins' => 1]));
     $config['plugins'] = array_unique(array_merge($config['plugins'], (array) ($setup['plugins'] ?? [])));
 }
+
+// No stored setup yet: index.php sends the browser to the installer, which saves setup.json
+$config['setup_file'] = "{$data}/setup.json";
+$config['setup_required'] = !$env('IMAP_HOST') && empty($setup);
+$config['enable_installer'] = $config['setup_required'];
 
 $config['autoconfig_allow_private'] = $flag('AUTOCONFIG_ALLOW_PRIVATE');
 $config['autoconfig_allow_plain'] = $flag('AUTOCONFIG_ALLOW_PLAIN');

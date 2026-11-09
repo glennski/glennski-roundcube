@@ -1,0 +1,40 @@
+<?php
+
+$labels = [];
+$labels['accounts'] = 'Konten';
+$labels['title'] = 'Konten';
+$labels['mailboxes'] = 'Postfächer';
+$labels['addmailbox'] = 'Postfach hinzufügen';
+$labels['current'] = 'Jetzt geöffnet';
+$labels['default'] = 'Standard';
+$labels['open'] = 'Öffnen';
+$labels['makedefault'] = 'Als Standard';
+$labels['remove'] = 'Entfernen';
+$labels['confirmremove'] = 'Dieses Postfach aus deinem Konto entfernen? Die E-Mails bleiben auf dem Mailserver.';
+$labels['quickadd'] = 'Schnelleinrichtung';
+$labels['presethint'] = 'Bei Gmail und Microsoft brauchst du meist ein App-Passwort statt deines normalen Passworts.';
+$labels['email'] = 'E-Mail-Adresse';
+$labels['mailpassword'] = 'Postfach-Passwort';
+$labels['detect'] = 'Server erkennen';
+$labels['detected'] = 'Server gefunden';
+$labels['notdetected'] = 'Nichts gefunden, bitte Server manuell eintragen';
+$labels['imaphost'] = 'IMAP-Server';
+$labels['smtphost'] = 'SMTP-Server';
+$labels['imapuser'] = 'Anmeldename';
+$labels['imapuserhint'] = 'Nur wenn er von der Adresse abweicht';
+$labels['label'] = 'Anzeigename';
+$labels['add'] = 'Postfach hinzufügen';
+$labels['appaccount'] = 'Dein Konto';
+$labels['changepassword'] = 'Passwort ändern';
+$labels['currentpassword'] = 'Aktuelles Passwort';
+$labels['newpassword'] = 'Neues Passwort (mind. 8 Zeichen)';
+$labels['connectfailed'] = 'Anmeldung am Mailserver nicht möglich';
+$labels['wrongpassword'] = 'Das aktuelle Passwort ist falsch';
+
+$messages = [];
+$messages['nomailbox'] = 'Dieses Konto hat noch kein Postfach. Bitte einen Administrator fragen.';
+$messages['missingfields'] = 'Bitte E-Mail-Adresse, Passwort und IMAP-Server angeben.';
+$messages['hostnotallowed'] = 'Dieser Server ist nicht erlaubt (private Adresse oder keine Verschlüsselung).';
+$messages['added'] = 'Postfach hinzugefügt.';
+$messages['removed'] = 'Postfach entfernt.';
+$messages['cannotremove'] = 'Das letzte Postfach kann nicht entfernt werden.';

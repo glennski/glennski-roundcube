@@ -183,4 +183,17 @@ class AutoconfigTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $a->wizard('fixed', 'nothing-here.example');
     }
+
+    public function test_user_supplied_hosts()
+    {
+        $public = new AutoconfigStub();
+        $this->assertTrue($public->is_allowed_host('imap.example.com'));
+        $this->assertFalse($public->is_allowed_host('dovecot'), 'single label');
+        $this->assertFalse($public->is_allowed_host('192.168.1.5'), 'address');
+
+        $private = new AutoconfigStub(['allow_private' => true]);
+        $this->assertTrue($private->is_allowed_host('dovecot'));
+        $this->assertTrue($private->is_allowed_host('192.168.1.5'));
+        $this->assertFalse($private->is_allowed_host('bad host!'));
+    }
 }

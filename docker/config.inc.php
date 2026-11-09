@@ -14,7 +14,7 @@ $config['log_dir'] = "{$data}/logs";
 $config['log_driver'] = 'stdout';
 $config['product_name'] = $env('PRODUCT_NAME', 'Webmail');
 $config['skin'] = $env('SKIN', 'elastic');
-$config['plugins'] = array_filter(array_map('trim', explode(',', $env('PLUGINS', 'archive,zipdownload'))));
+$config['plugins'] = array_filter(array_map('trim', explode(',', $env('ENABLE_PLUGINS', 'archive,zipdownload'))));
 
 // Mail servers: explicit > detected once at container start > detected at every login
 if ($env('IMAP_HOST')) {
@@ -23,7 +23,7 @@ if ($env('IMAP_HOST')) {
     $config['username_domain'] = $env('USERNAME_DOMAIN');
 } else {
     $setup = is_readable("{$data}/setup.json") ? json_decode(file_get_contents("{$data}/setup.json"), true) : null;
-    $config = array_merge($config, array_diff_key((array) $setup, ['plugins' => 1]));
+    $config = array_merge($config, array_diff_key((array) $setup, ['plugins' => 1, 'mode' => 1]));
     $config['plugins'] = array_unique(array_merge($config['plugins'], (array) ($setup['plugins'] ?? [])));
 }
 

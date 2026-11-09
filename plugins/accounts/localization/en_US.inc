@@ -1,0 +1,40 @@
+<?php
+
+$labels = [];
+$labels['accounts'] = 'Accounts';
+$labels['title'] = 'Accounts';
+$labels['mailboxes'] = 'Mailboxes';
+$labels['addmailbox'] = 'Add a mailbox';
+$labels['current'] = 'Open now';
+$labels['default'] = 'Default';
+$labels['open'] = 'Open';
+$labels['makedefault'] = 'Make default';
+$labels['remove'] = 'Remove';
+$labels['confirmremove'] = 'Remove this mailbox from your account? The mail itself stays on the mail server.';
+$labels['quickadd'] = 'Quick setup';
+$labels['presethint'] = 'Gmail and Microsoft usually require an app password instead of your normal password.';
+$labels['email'] = 'Email address';
+$labels['mailpassword'] = 'Mailbox password';
+$labels['detect'] = 'Detect servers';
+$labels['detected'] = 'Servers found';
+$labels['notdetected'] = 'Nothing found, enter the servers manually';
+$labels['imaphost'] = 'IMAP server';
+$labels['smtphost'] = 'SMTP server';
+$labels['imapuser'] = 'Login name';
+$labels['imapuserhint'] = 'Only if different from the address';
+$labels['label'] = 'Display name';
+$labels['add'] = 'Add mailbox';
+$labels['appaccount'] = 'Your account';
+$labels['changepassword'] = 'Change password';
+$labels['currentpassword'] = 'Current password';
+$labels['newpassword'] = 'New password (8+ characters)';
+$labels['connectfailed'] = 'Could not sign in to the mail server';
+$labels['wrongpassword'] = 'The current password is wrong';
+
+$messages = [];
+$messages['nomailbox'] = 'This account has no mailbox yet. Ask an administrator.';
+$messages['missingfields'] = 'Please enter an email address, a password and the IMAP server.';
+$messages['hostnotallowed'] = 'This server is not allowed (private address or no encryption).';
+$messages['added'] = 'Mailbox added.';
+$messages['removed'] = 'Mailbox removed.';
+$messages['cannotremove'] = 'The last mailbox cannot be removed.';

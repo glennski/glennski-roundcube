@@ -2,6 +2,12 @@
 
 This file includes only changes we consider noteworthy for users, admins and plugin authors. For a full view please look at the git history.
 
+## Glennski 0.2.0 (based on Roundcube 1.8-git)
+
+- New first-run installer page (light/dark, English/German) with two tiles: **One email address** (classic: log in with address + mail password; fixed servers or detection at login) and **Account with several mailboxes**
+- Add `accounts` plugin (multi-account mode): users log in with an account of this application, add mailboxes from any provider under Settings > Accounts (server detection, Google/Microsoft/iCloud presets, login check before saving), and switch between them. Mailbox passwords are stored encrypted, app passwords hashed. `bin/accounts.php` for administration
+- Fix: `ROUNDCUBE_PLUGINS` clashed with Roundcube's own environment mapping and disabled all plugins in Docker; the variable is now `ROUNDCUBE_ENABLE_PLUGINS`
+
 ## Glennski 0.1.0 (based on Roundcube 1.8-git)
 
 - Add `autoconfig` plugin and `rcube_autoconfig` class: detect IMAP/SMTP servers from the address typed at login (provider autoconfig, Autodiscover, SRV records RFC 6186/8314, Thunderbird ISP database, MX lookup). Lookups only touch public hosts and require TLS by default

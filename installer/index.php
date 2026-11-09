@@ -48,6 +48,12 @@ if (function_exists('session_start')) {
 $RCI = rcmail_install::get_instance();
 $RCI->load_config();
 
+// Docker first run: own page, asks how the installation is used and saves setup_file
+if ($RCI->getprop('setup_file')) {
+    include __DIR__ . '/firstrun.php';
+    exit;
+}
+
 if (isset($_GET['_getconfig'])) {
     $filename = 'config.inc.php';
     if (!empty($_SESSION['config']) && $_GET['_getconfig'] == 2) {
@@ -98,7 +104,7 @@ if (!empty($_POST['_destroy'])) {
 }
 
 // go to 'check env' step if we have a local configuration
-if ($RCI->configured && empty($_REQUEST['_step']) && !$RCI->getprop('setup_file')) {
+if ($RCI->configured && empty($_REQUEST['_step'])) {
     header('Location: ?_step=1');
     exit;
 }
@@ -150,16 +156,6 @@ if ($RCI->configured && !$RCI->getprop('enable_installer') && empty($_SESSION['a
 
 <h1>Roundcube Webmail Installer</h1>
 
-<?php
-
-// Docker first run: only ask how the mail servers are found, then save setup_file
-if ($RCI->getprop('setup_file')) {
-    include __DIR__ . '/firstrun.php';
-    echo '</div></body></html>';
-    exit;
-}
-
-?>
 <ol id="progress">
 <?php
 $include_steps = [

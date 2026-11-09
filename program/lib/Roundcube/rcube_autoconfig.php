@@ -109,6 +109,24 @@ class rcube_autoconfig
     }
 
     /**
+     * Whether a mail server host may be contacted: resolvable and not in a
+     * private/reserved range (unless 'allow_private'). For user-supplied hosts.
+     */
+    public function is_allowed_host(string $host): bool
+    {
+        $host = rcube_utils::idn_to_ascii(strtolower($host));
+
+        // inside a trusted network single-label names ("dovecot") and addresses are normal
+        if ($this->options['allow_private']
+            && (filter_var($host, \FILTER_VALIDATE_IP) || preg_match('/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/', $host))
+        ) {
+            return true;
+        }
+
+        return self::is_hostname($host) && $this->resolve_public($host) !== null;
+    }
+
+    /**
      * Setup wizard logic shared by the installer, bin/setup.php and Docker.
      *
      * @param string $mode  'fixed' (servers from an address/domain are written to the config)

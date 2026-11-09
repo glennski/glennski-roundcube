@@ -18,5 +18,5 @@ services:
       #   ROUNDCUBE_SETUP_EMAIL: you@example.com      # detected once at start
       # External database (default is SQLite in the volume):
       #   ROUNDCUBE_DB_DSN: pgsql://roundcube:secret@db/roundcube
-      ROUNDCUBE_PLUGINS: archive,zipdownload
+      ROUNDCUBE_ENABLE_PLUGINS: archive,zipdownload
     restart: unless-stopped

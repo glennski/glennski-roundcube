@@ -122,7 +122,8 @@ class InstallTest extends ActionTestCase
             'enabled' => false,
         ];
 
-        $this->assertSame($acl, $result[0]);
+        // other plugins (e.g. of this distribution) may sort before 'acl'
+        $this->assertContains($acl, $result);
     }
 
     /**

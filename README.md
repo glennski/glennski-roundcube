@@ -33,14 +33,16 @@ Roundcubemail follows the semantic versioning rules for releases. For more detai
 [the RELEASE_MANAGEMENT file](docs/RELEASE_MANAGEMENT.md).
 
 
-GLENNSKI EDITION (0.1.0)
+GLENNSKI EDITION (0.2.0)
 ------------------------
 This fork adds, on top of Roundcube:
 
 * **Server auto-detection** - the `autoconfig` plugin finds IMAP/SMTP servers from the
   address typed at login (autoconfig, Autodiscover, SRV records, ISP database, MX lookup)
-* **Setup wizard** - in the web installer and as `bin/setup.php`: fixed servers from an
-  address/domain, or detection at every login
+* **Setup wizard** - a first-run page asks how the installation is used: *one email address*
+  (classic login with address + mail password) or an *account with several mailboxes*
+  (own password, mailboxes from any provider added under Settings > Accounts, switch between them).
+  Also available as `bin/setup.php`
 * **Docker first** - `docker compose up -d`, see [docker/README.md](docker/README.md).
   Uploading the files to a classic PHP web server and using the web installer still works.
 

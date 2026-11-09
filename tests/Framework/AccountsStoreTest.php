@@ -99,4 +99,37 @@ class AccountsStoreTest extends TestCase
         $this->assertFalse(\accounts_store::host_allowed('ssl://127.0.0.1:993'), 'not a host name');
         $this->assertFalse(\accounts_store::host_allowed('ssl://localhost:993'), 'not a public name');
     }
+
+    public function test_tokens_are_stored_hashed_and_found_by_their_owner()
+    {
+        $uid = $this->user();
+        $created = self::$store->token_create($uid, 'Claude');
+
+        $this->assertMatchesRegularExpression('/^gl_[0-9a-f]{48}$/', $created['token']);
+        $this->assertSame($uid, self::$store->token_user($created['token'])['user_id']);
+        $this->assertNull(self::$store->token_user('gl_' . str_repeat('0', 48)));
+
+        // only the hash is in the database
+        $db = \rcube::get_instance()->get_dbh();
+        $rows = $db->fetch_assoc($db->query('SELECT token_hash FROM ' . $db->table_name('glennski_tokens', true) . ' WHERE token_id = ?', $created['id']));
+        $this->assertSame(hash('sha256', $created['token']), $rows['token_hash']);
+
+        $list = self::$store->tokens($uid);
+        $this->assertCount(1, $list);
+        $this->assertSame('Claude', $list[0]['name']);
+        $this->assertArrayNotHasKey('token_hash', $list[0]);
+    }
+
+    public function test_a_token_can_only_be_revoked_by_its_owner()
+    {
+        $owner = $this->user();
+        $other = $this->user();
+        $created = self::$store->token_create($owner, 'x');
+
+        self::$store->token_revoke($created['id'], $other);
+        $this->assertNotNull(self::$store->token_user($created['token']));
+
+        self::$store->token_revoke($created['id'], $owner);
+        $this->assertNull(self::$store->token_user($created['token']));
+    }
 }

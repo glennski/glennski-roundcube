@@ -89,6 +89,29 @@ class rcmail_api_accounts
         return (new rcmail_api_session($this->api))->info();
     }
 
+    public function tokens(): array
+    {
+        return ['tokens' => $this->plugin()->api_tokens()];
+    }
+
+    /**
+     * The plain token is part of this one response and cannot be shown again.
+     */
+    public function token_create(): array
+    {
+        $created = $this->plugin()->api_token_create((string) $this->api->string('name', 'MCP'));
+
+        // not called "token": that key carries the request token (CSRF) in every other response
+        return ['access_token' => $created['token'], 'tokens' => $this->plugin()->api_tokens()];
+    }
+
+    public function token_revoke(): array
+    {
+        $this->plugin()->api_token_revoke($this->api->int('id'));
+
+        return ['tokens' => $this->plugin()->api_tokens()];
+    }
+
     public function password(): array
     {
         if ($error = $this->plugin()->api_password((string) $this->api->input('current', ''), (string) $this->api->input('new', ''))) {

@@ -9,7 +9,7 @@ import { debounce, escapeHtml, fmtSize, isEmail, parseAddress, splitAddresses } 
 
 // ---- recipients with autocomplete ------------------------------------------------
 
-function RecipientField({ label, value, onChange, autofocus }) {
+function RecipientField({ label, value, onChange, autofocus, extra }) {
     const [text, setText] = useState('');
     const [suggestions, setSuggestions] = useState([]);
     const [index, setIndex] = useState(0);
@@ -88,6 +88,7 @@ function RecipientField({ label, value, onChange, autofocus }) {
                 <strong>${s.name || s.email}</strong>${s.name && html`<small>${s.email}</small>`}
             </li>`)}</ul>`}
         </div>
+        ${extra}
     </div>`;
 }
 
@@ -220,8 +221,8 @@ function ComposeWindow({ c, index, count }) {
             ${c.error && html`<div class="alert error" role="alert">${c.error}</div>`}
             ${identities.length > 1 && html`<label class="rcpt-field"><span class="rcpt-label">${t('compose.from')}</span>
                 <select class="plain-select" value=${c.identityId} onChange=${(e) => patch({ identityId: Number(e.target.value) })}>${identities.map((i) => html`<option key=${i.id} value=${i.id}>${i.name ? `${i.name} <${i.email}>` : i.email}</option>`)}</select></label>`}
-            <${RecipientField} label=${t('compose.to')} value=${c.to} onChange=${(to) => patch({ to })} autofocus=${!c.to.length} />
-            <button type="button" class="link-btn cc-toggle" hidden=${showCc} onClick=${() => setShowCc(true)}>${t('compose.showCc')}</button>
+            <${RecipientField} label=${t('compose.to')} value=${c.to} onChange=${(to) => patch({ to })} autofocus=${!c.to.length}
+                extra=${!showCc && html`<button type="button" class="link-btn cc-toggle" onClick=${(e) => { e.stopPropagation(); setShowCc(true); }}>${t('compose.showCc')}</button>`} />
             ${showCc && html`<${RecipientField} label=${t('compose.cc')} value=${c.cc} onChange=${(cc) => patch({ cc })} />
                              <${RecipientField} label=${t('compose.bcc')} value=${c.bcc} onChange=${(bcc) => patch({ bcc })} />`}
             <label class="rcpt-field"><span class="rcpt-label">${t('compose.subject')}</span><input type="text" class="subject-input" value=${c.subject} onInput=${(e) => patch({ subject: e.target.value })} /></label>

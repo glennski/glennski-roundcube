@@ -19,6 +19,7 @@ class rcmail_api_mail
     protected const BLOCKED_IMAGE = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
     /** image types that are safe to display inline (never SVG: it can carry script) */
+    protected const MAX_ATTACHMENT_JSON = 10 * 1024 * 1024;
     protected const INLINE_IMAGES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/avif', 'image/bmp'];
 
     protected rcmail $rc;
@@ -280,6 +281,36 @@ class rcmail_api_mail
         $msg->get_part_content($id, fopen('php://output', 'w'), true);
 
         return null;
+    }
+
+    /**
+     * An attachment as JSON (text as text, everything else base64), for clients that cannot download links.
+     */
+    public function attachment(): array
+    {
+        $this->api->storage();
+
+        $msg = new rcube_message($this->api->int('uid'), $this->api->string('folder', null, true));
+        $part = $msg->mime_parts[$this->api->string('part', null, true)] ?? null;
+
+        if (empty($msg->headers) || !$part) {
+            throw new rcmail_api_exception(404, 'part_not_found', 'Unknown attachment');
+        }
+        if ((int) $part->size > self::MAX_ATTACHMENT_JSON) {
+            throw new rcmail_api_exception(413, 'too_large', 'The attachment is too large to be returned inline');
+        }
+
+        $content = (string) $msg->get_part_body($part->mime_id, true);
+        $type = strtolower($part->mimetype ?: 'application/octet-stream');
+        $is_text = str_starts_with($type, 'text/') && mb_check_encoding($content, 'UTF-8');
+
+        return [
+            'name' => $part->filename ?: ('part-' . $part->mime_id),
+            'type' => $type,
+            'size' => strlen($content),
+            'encoding' => $is_text ? 'text' : 'base64',
+            'content' => $is_text ? $content : base64_encode($content),
+        ];
     }
 
     // ---- actions --------------------------------------------------------
@@ -549,6 +580,17 @@ class rcmail_api_mail
 
     protected function attach_uploads(\Mail_mime $mime): void
     {
+        // files inside the JSON body ({name, type, content_base64}), for clients that cannot send multipart
+        foreach ($this->api->list('attach') as $a) {
+            $data = is_array($a) ? base64_decode((string) ($a['content_base64'] ?? ''), true) : false;
+
+            if (!$data || strlen($data) > self::MAX_ATTACHMENT_JSON) {
+                throw new rcmail_api_exception(400, 'invalid_attachment', 'Attachments need a name and content_base64 (up to 10 MB)');
+            }
+
+            $mime->addAttachment($data, (string) ($a['type'] ?? '') ?: 'application/octet-stream', (string) ($a['name'] ?? 'attachment'), false, 'base64', 'attachment', 'UTF-8');
+        }
+
         $files = $_FILES['attachments'] ?? null;
 
         if (!$files) {

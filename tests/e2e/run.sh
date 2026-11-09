@@ -25,6 +25,7 @@ rm -f "$JAR"
 
 python3 seed.py
 python3 api_test.py
+API_BASE=$URL/ python3 mcp_test.py
 
 docker run --rm --add-host=host.docker.internal:host-gateway -v "$PWD":/work -v "$PWD/screenshots":/out \
     mcr.microsoft.com/playwright/python:v1.49.0-noble \

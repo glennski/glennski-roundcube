@@ -48,6 +48,10 @@ const en = {
     'compose.linkPrompt': 'Link address', 'compose.sendFailed': 'The message could not be sent', 'compose.shortcut': 'Ctrl+Enter to send',
     'compose.showCc': 'Cc / Bcc',
 
+    'settings.integrations': 'Integrations', 'int.hint': 'Let AI assistants and other programs work with your mail through the MCP server. Each program gets its own token that you can revoke at any time.',
+    'int.endpoint': 'MCP server address', 'int.name': 'Name of the program', 'int.namePlaceholder': 'e.g. Claude Code', 'int.create': 'Create token', 'int.created': 'Copy the token now. It is shown only once.',
+    'int.tokens': 'Active tokens', 'int.none': 'No tokens yet.', 'int.never': 'never used', 'int.lastUsed': 'last used', 'int.revoke': 'Revoke', 'int.confirmRevoke': 'Revoke this token? Programs that use it lose access immediately.',
+    'int.revoked': 'Token revoked', 'int.copy': 'Copy', 'int.copied': 'Copied', 'int.example': 'Connect Claude Code',
     'settings.title': 'Settings', 'settings.general': 'General', 'settings.accounts': 'Accounts', 'settings.identities': 'Identities',
     'settings.contacts': 'Contacts', 'settings.about': 'About', 'settings.saved': 'Settings saved',
     'settings.language': 'Language', 'settings.theme': 'Appearance', 'settings.theme.auto': 'Match system', 'settings.theme.light': 'Light',
@@ -135,6 +139,10 @@ const de = {
     'compose.linkPrompt': 'Link-Adresse', 'compose.sendFailed': 'Die Nachricht konnte nicht gesendet werden', 'compose.shortcut': 'Strg+Enter zum Senden',
     'compose.showCc': 'Cc / Bcc',
 
+    'settings.integrations': 'Integrationen', 'int.hint': 'KI-Assistenten und andere Programme können über den MCP-Server mit deinen Mails arbeiten. Jedes Programm bekommt einen eigenen Token, den du jederzeit widerrufen kannst.',
+    'int.endpoint': 'Adresse des MCP-Servers', 'int.name': 'Name des Programms', 'int.namePlaceholder': 'z. B. Claude Code', 'int.create': 'Token erstellen', 'int.created': 'Kopiere den Token jetzt. Er wird nur einmal angezeigt.',
+    'int.tokens': 'Aktive Tokens', 'int.none': 'Noch keine Tokens.', 'int.never': 'nie benutzt', 'int.lastUsed': 'zuletzt benutzt', 'int.revoke': 'Widerrufen', 'int.confirmRevoke': 'Token widerrufen? Programme, die ihn nutzen, verlieren sofort den Zugriff.',
+    'int.revoked': 'Token widerrufen', 'int.copy': 'Kopieren', 'int.copied': 'Kopiert', 'int.example': 'Claude Code verbinden',
     'settings.title': 'Einstellungen', 'settings.general': 'Allgemein', 'settings.accounts': 'Konten', 'settings.identities': 'Absender',
     'settings.contacts': 'Kontakte', 'settings.about': 'Info', 'settings.saved': 'Einstellungen gespeichert',
     'settings.language': 'Sprache', 'settings.theme': 'Darstellung', 'settings.theme.auto': 'Wie das System', 'settings.theme.light': 'Hell',

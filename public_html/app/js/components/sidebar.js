@@ -49,7 +49,7 @@ function AccountSwitcher() {
     return html`<${Popover} align="left" class="account-switcher" trigger=${({ toggle, open }) => html`
         <button type="button" class="account-btn" onClick=${toggle} aria-expanded=${open} aria-haspopup="menu">
             <${Avatar} name=${name} email=${email} size=${32} />
-            <span class="account-text"><strong>${name}</strong><small>${email}</small></span>
+            <span class="account-text"><strong>${name}</strong>${name !== email && html`<small>${email}</small>`}</span>
             ${accounts && html`<${Icon} name="chevrondown" size=${16} />`}
         </button>`}>
         ${(close) => html`

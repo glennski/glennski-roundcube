@@ -2,6 +2,13 @@
 
 This file includes only changes we consider noteworthy for users, admins and plugin authors. For a full view please look at the git history.
 
+## Glennski 0.4.0 (based on Roundcube 1.8-git)
+
+- Add the MCP server `mcp.php` (see `docs/MCP.md`): AI assistants can search, read, send, sort and delete mail, manage folders and contacts, and use any mailbox of the account. Authentication with access tokens (multi-account mode only)
+- Access tokens: Settings > Integrations, `api.php/v1/tokens*`, `bin/accounts.php token`. Stored as hashes, revocable one by one. New table `glennski_tokens` (created automatically)
+- API: `v1/attachment` returns an attachment as JSON; `v1/send` accepts files as base64 in `attach`
+- Interface polish: quick actions (archive, delete, mark read/unread) when hovering a message, Cc/Bcc link next to the recipient field, mail providers in the account form as buttons, notifications moved to the lower left so they no longer cover the Send button, equal height for all form fields
+
 ## Glennski 0.3.0 (based on Roundcube 1.8-git)
 
 - New web interface (`public_html/app/`, Preact + htm without a build step): three-pane layout down to phones, light/dark/system theme, compact or comfortable lists, English and German, keyboard shortcuts, search and filters, bulk actions, folder management, compose windows with recipient autocomplete, formatting, attachments (drag and drop, paste), reply/reply all/forward and autosaved drafts, settings (general, accounts, identities, contacts), mailbox switcher in the sidebar

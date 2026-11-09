@@ -57,6 +57,103 @@ class accounts_store
             is_default SMALLINT NOT NULL DEFAULT 0,
             last_used {$ts}
         ){$suffix}");
+
+        $this->tokens_install();
+    }
+
+    /**
+     * Tokens came with 0.4.0; also called lazily so that older installations upgrade themselves.
+     */
+    public function tokens_install(): void
+    {
+        $tokens = $this->db->table_name('glennski_tokens', true);
+
+        [$pk, $str, $ts] = [
+            'mysql' => ['INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY', 'VARCHAR(255)', 'TIMESTAMP NULL DEFAULT NULL'],
+            'postgres' => ['SERIAL PRIMARY KEY', 'VARCHAR(255)', 'TIMESTAMP WITH TIME ZONE DEFAULT NULL'],
+            'sqlite' => ['INTEGER PRIMARY KEY AUTOINCREMENT', 'TEXT', 'TEXT DEFAULT NULL'],
+        ][$this->db->db_provider] ?? throw new \RuntimeException('Unsupported database: ' . $this->db->db_provider);
+
+        $suffix = $this->db->db_provider === 'mysql' ? ' ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci' : '';
+
+        $this->db->query("CREATE TABLE IF NOT EXISTS {$tokens} (
+            token_id {$pk},
+            user_id INTEGER NOT NULL,
+            name {$str} NOT NULL DEFAULT '',
+            token_hash {$str} NOT NULL UNIQUE,
+            created {$ts},
+            last_used {$ts}
+        ){$suffix}");
+    }
+
+    /**
+     * Create an access token (for the MCP server). The plain token is returned once; only its hash is stored.
+     * Tokens are 192 random bits, so a fast hash is enough (nothing to brute force, unlike passwords).
+     *
+     * @return array{id: int, token: string}
+     */
+    public function token_create(int $user_id, string $name): array
+    {
+        $this->tokens_install();
+
+        $token = 'gl_' . bin2hex(random_bytes(24));
+
+        $this->db->query(
+            'INSERT INTO ' . $this->db->table_name('glennski_tokens', true) . ' (user_id, name, token_hash, created) VALUES (?, ?, ?, ' . $this->db->now() . ')',
+            $user_id,
+            mb_substr(trim($name), 0, 100),
+            hash('sha256', $token)
+        );
+
+        return ['id' => (int) $this->db->insert_id('glennski_tokens'), 'token' => $token];
+    }
+
+    /**
+     * @return array<int, array{token_id: int, name: string, created: ?string, last_used: ?string}>
+     */
+    public function tokens(int $user_id): array
+    {
+        $this->tokens_install();
+
+        $result = $this->db->query(
+            'SELECT token_id, name, created, last_used FROM ' . $this->db->table_name('glennski_tokens', true) . ' WHERE user_id = ? ORDER BY token_id',
+            $user_id
+        );
+
+        $out = [];
+        while ($row = $this->db->fetch_assoc($result)) {
+            $out[] = $row;
+        }
+
+        return $out;
+    }
+
+    public function token_revoke(int $token_id, int $user_id): void
+    {
+        $this->db->query('DELETE FROM ' . $this->db->table_name('glennski_tokens', true) . ' WHERE token_id = ? AND user_id = ?', $token_id, $user_id);
+    }
+
+    /**
+     * @return array|null ['user_id', 'username'] of the token's owner
+     */
+    public function token_user(string $token): ?array
+    {
+        $this->tokens_install();
+
+        $hash = hash('sha256', $token);
+        $row = $this->fetch(
+            'SELECT t.token_id, u.user_id, u.username FROM ' . $this->db->table_name('glennski_tokens', true) . ' t JOIN '
+            . $this->db->table_name('glennski_users', true) . ' u ON u.user_id = t.user_id WHERE t.token_hash = ?',
+            $hash
+        );
+
+        if (!$row) {
+            return null;
+        }
+
+        $this->db->query('UPDATE ' . $this->db->table_name('glennski_tokens', true) . ' SET last_used = ' . $this->db->now() . ' WHERE token_id = ?', $row['token_id']);
+
+        return ['user_id' => (int) $row['user_id'], 'username' => $row['username']];
     }
 
     public function user_create(string $username, string $password): int

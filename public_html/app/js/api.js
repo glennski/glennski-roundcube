@@ -99,6 +99,9 @@ export const api = {
     removeAccount: (id) => request('POST', 'accounts/remove', { body: { id } }),
     defaultAccount: (id) => request('POST', 'accounts/default', { body: { id } }),
     switchAccount: (id) => request('POST', 'accounts/switch', { body: { id } }),
+    tokens: () => request('GET', 'tokens'),
+    createToken: (name) => request('POST', 'tokens/create', { body: { name } }),
+    revokeToken: (id) => request('POST', 'tokens/revoke', { body: { id } }),
     changePassword: (current, next) => request('POST', 'accounts/password', { body: { current, new: next } }),
 
     /** Send or save a draft; reports upload progress (0..1). */

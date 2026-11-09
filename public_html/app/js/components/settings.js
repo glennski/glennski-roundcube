@@ -89,7 +89,10 @@ function AddMailbox() {
 
     return html`<form onSubmit=${submit} class="stack card-form">
         <h4>${t('acc.add')}</h4>
-        <p class="muted small">${t('acc.quick')}: ${PRESETS.map(([name, imap, smtp], i) => html`<span key=${name}>${i ? ' · ' : ''}<button type="button" class="link-btn" onClick=${() => setForm({ ...form, imap_host: imap, smtp_host: smtp })}>${name}</button></span>`)}<br />${t('acc.appPassword')}</p>
+        <div class="stack-sm">
+            <div class="row"><span class="muted small">${t('acc.quick')}</span>${PRESETS.map(([name, imap, smtp]) => html`<button type="button" key=${name} class="chip" onClick=${() => setForm({ ...form, imap_host: imap, smtp_host: smtp })}>${name}</button>`)}</div>
+            <p class="muted small">${t('acc.appPassword')}</p>
+        </div>
         ${error && html`<div class="alert error" role="alert">${error}</div>`}
         <div class="grid2">
             <label class="field"><span>${t('acc.email')}</span><input type="email" required value=${form.email} onInput=${set('email')} autocomplete="off" /></label>
@@ -161,6 +164,69 @@ function Accounts() {
         </ul>
         <${AddMailbox} />
         <${ChangePassword} />
+    </div>`;
+}
+
+// ---- integrations (MCP) ---------------------------------------------------------------------
+
+function Copy({ text }) {
+    const copy = async () => {
+        try {
+            await navigator.clipboard.writeText(text);
+            toast(t('int.copied'), 'success');
+        } catch (e) { /* the field is selectable as a fallback */ }
+    };
+
+    return html`<${Button} onClick=${copy}>${t('int.copy')}<//>`;
+}
+
+function Integrations() {
+    const [tokens, setTokens] = useState(null);
+    const [name, setName] = useState('');
+    const [fresh, setFresh] = useState(null);
+    const endpoint = new URL('../mcp.php', window.location.href).href;
+
+    useEffect(() => { api.tokens().then((r) => setTokens(r.tokens)).catch((e) => toast(errorText(e), 'error')); }, []);
+
+    const create = async (e) => {
+        e.preventDefault();
+
+        try {
+            const r = await api.createToken(name.trim() || 'MCP');
+
+            setFresh(r.access_token);
+            setTokens(r.tokens);
+            setName('');
+        } catch (err) { toast(errorText(err), 'error'); }
+    };
+
+    const revoke = async (id) => {
+        if (!window.confirm(t('int.confirmRevoke'))) return;
+
+        try {
+            setTokens((await api.revokeToken(id)).tokens);
+            toast(t('int.revoked'), 'success');
+        } catch (err) { toast(errorText(err), 'error'); }
+    };
+
+    const command = `claude mcp add --transport http glennski-mail ${endpoint} --header "Authorization: Bearer ${fresh || '<token>'}"`;
+
+    return html`<div class="settings-section">
+        <p class="muted">${t('int.hint')}</p>
+        <label class="field"><span>${t('int.endpoint')}</span><span class="row nowrap"><input type="text" readonly value=${endpoint} onFocus=${(e) => e.target.select()} /><${Copy} text=${endpoint} /></span></label>
+        <form onSubmit=${create} class="row nowrap">
+            <label class="field grow"><span>${t('int.name')}</span><input type="text" maxlength="100" placeholder=${t('int.namePlaceholder')} value=${name} onInput=${(e) => setName(e.target.value)} /></label>
+            <${Button} variant="primary" type="submit">${t('int.create')}<//>
+        </form>
+        ${fresh && html`<div class="banner token-new" role="status"><div class="grow stack-sm"><strong>${t('int.created')}</strong><span class="row nowrap"><input type="text" readonly value=${fresh} onFocus=${(e) => e.target.select()} aria-label="Token" /><${Copy} text=${fresh} /></span></div></div>`}
+        <div class="stack-sm"><h4>${t('int.example')}</h4><pre class="code">${command}</pre></div>
+        <div class="stack-sm"><h4>${t('int.tokens')}</h4>
+            ${tokens && !tokens.length && html`<p class="muted">${t('int.none')}</p>`}
+            <ul class="list-cards">${(tokens || []).map((k) => html`<li key=${k.token_id} class="list-card">
+                <div class="grow"><strong>${k.name || 'MCP'}</strong><div class="muted small">${k.last_used ? `${t('int.lastUsed')}: ${k.last_used}` : t('int.never')}</div></div>
+                <${Button} variant="danger-ghost" onClick=${() => revoke(k.token_id)}>${t('int.revoke')}<//>
+            </li>`)}</ul>
+        </div>
     </div>`;
 }
 
@@ -298,8 +364,8 @@ function About() {
 export function SettingsDialog({ tab: initial }) {
     const multi = useStore((s) => !!s.session.accounts);
     const [tab, setTab] = useState(initial || 'general');
-    const tabs = [['general', 'sliders', t('settings.general')], ...(multi ? [['accounts', 'users', t('settings.accounts')]] : []), ['identities', 'user', t('settings.identities')], ['contacts', 'users', t('settings.contacts')], ['about', 'shield', t('settings.about')]];
-    const content = { general: General, accounts: Accounts, identities: Identities, contacts: Contacts, about: About }[tab] || General;
+    const tabs = [['general', 'sliders', t('settings.general')], ...(multi ? [['accounts', 'users', t('settings.accounts')]] : []), ...(multi ? [['integrations', 'shield', t('settings.integrations')]] : []), ['identities', 'user', t('settings.identities')], ['contacts', 'users', t('settings.contacts')], ['about', 'shield', t('settings.about')]];
+    const content = { general: General, accounts: Accounts, integrations: Integrations, identities: Identities, contacts: Contacts, about: About }[tab] || General;
 
     return html`<${Modal} title=${t('settings.title')} onClose=${closeDialog} wide class="settings">
         <div class="settings-layout">

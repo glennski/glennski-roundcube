@@ -33,7 +33,7 @@ Roundcubemail follows the semantic versioning rules for releases. For more detai
 [the RELEASE_MANAGEMENT file](docs/RELEASE_MANAGEMENT.md).
 
 
-GLENNSKI EDITION (0.3.0)
+GLENNSKI EDITION (0.4.0)
 ------------------------
 This fork adds, on top of Roundcube:
 
@@ -46,6 +46,9 @@ This fork adds, on top of Roundcube:
 * **New web interface** - a fast single-page client (`public_html/app/`) on top of a JSON API
   (`public_html/api.php`, documented in [docs/API.md](docs/API.md)). It is the default at the root
   URL; the classic Elastic interface stays available at `/?classic=1`, or set `$config['frontend'] = 'classic'`.
+* **MCP server** - `public_html/mcp.php` lets AI assistants search, read, send and sort mail and
+  manage folders and contacts, with revocable access tokens (multi-account mode,
+  see [docs/MCP.md](docs/MCP.md))
 * **Docker first** - `docker compose up -d`, see [docker/README.md](docker/README.md).
   Uploading the files to a classic PHP web server and using the web installer still works.
 

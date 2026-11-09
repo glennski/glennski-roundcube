@@ -50,10 +50,15 @@ switch ($cmd) {
         $store->mailbox_set_default((int) ($argv[3] ?? 0), $id);
         echo "Default mailbox set.\n";
         break;
+    case 'token': // token <name> [label]: prints a new access token for the MCP server, once
+        $id = $store->user_id($argv[2] ?? '') ?: rcube::raise_error('Unknown user', false, true);
+        echo $store->token_create($id, $argv[3] ?? 'CLI')['token'] . "\n";
+        break;
     default:
         echo "Usage: bin/accounts.php install\n"
            . "       bin/accounts.php add-user <name> <password>\n"
            . "       bin/accounts.php passwd <name> <new password>\n"
            . "       bin/accounts.php mailboxes <name>\n"
-           . "       bin/accounts.php set-default <name> <mailbox id>\n";
+           . "       bin/accounts.php set-default <name> <mailbox id>\n"
+           . "       bin/accounts.php token <name> [label]\n";
 }

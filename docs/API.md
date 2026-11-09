@@ -37,6 +37,8 @@ Roundcube task (`api`), so plugins that extend the web UI do not load.
 | `GET v1/contacts[?q]`, `GET v1/contacts/suggest?q`, `POST v1/contacts/save` `delete` | Address book and recipient suggestions |
 | `GET v1/identities`, `POST v1/identities/save` `delete` | Sender identities |
 | `GET v1/settings`, `POST v1/settings` | `theme`, `density`, `mail_pagesize`, `htmleditor`, `language`, `timezone` |
+| `GET v1/attachment?folder&uid&part` | Attachment as JSON `{name, type, size, encoding: text\|base64, content}`, up to 10 MB (for clients that cannot follow download links) |
+| `GET v1/tokens`, `POST v1/tokens/create` `revoke` | Access tokens for the [MCP server](MCP.md). `create` returns the plain `access_token` once |
 | `GET v1/accounts`, `POST v1/accounts/add` `detect` `remove` `default` `switch` `password` | Multi-account mode only. `switch` replaces the session and returns the new state |
 
 ## Message HTML

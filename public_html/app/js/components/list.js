@@ -41,6 +41,11 @@ function Row({ m, active, selected, sentLike }) {
                 <span class="row-subject">${m.answered ? html`<${Icon} name="reply" size=${13} class="muted-icon" />` : ''}${m.subject || t('reader.noSubject')}</span>
             </span>
         </button>
+        <span class="row-actions" role="group">
+            <${IconButton} icon="archive" label=${t('act.archive')} size=${16} onClick=${() => act('archive', [m.uid])} />
+            <${IconButton} icon="trash" label=${t('act.delete')} size=${16} onClick=${() => act('delete', [m.uid])} />
+            <${IconButton} icon=${m.seen ? 'mail' : 'mailopen'} label=${m.seen ? t('act.markUnread') : t('act.markRead')} size=${16} onClick=${() => act(m.seen ? 'mark_unread' : 'mark_read', [m.uid])} />
+        </span>
         <button type="button" class=${`row-star ${m.flagged ? 'on' : ''}`} aria-label=${m.flagged ? t('act.unstar') : t('act.star')} aria-pressed=${m.flagged} onClick=${() => toggleStar(m)}>
             <${Icon} name="star" size=${16} filled=${m.flagged} />
         </button>

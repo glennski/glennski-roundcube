@@ -50,6 +50,7 @@ class rcmail_api
         'GET v1/messages' => ['rcmail_api_mail', 'messages', true],
         'GET v1/message' => ['rcmail_api_mail', 'message', true],
         'GET v1/part' => ['rcmail_api_mail', 'part', true],
+        'GET v1/attachment' => ['rcmail_api_mail', 'attachment', true],
         'POST v1/messages/actions' => ['rcmail_api_mail', 'actions', true],
         'POST v1/send' => ['rcmail_api_mail', 'send', true],
 
@@ -72,6 +73,9 @@ class rcmail_api
         'POST v1/accounts/default' => ['rcmail_api_accounts', 'make_default', true],
         'POST v1/accounts/switch' => ['rcmail_api_accounts', 'switch', true],
         'POST v1/accounts/password' => ['rcmail_api_accounts', 'password', true],
+        'GET v1/tokens' => ['rcmail_api_accounts', 'tokens', true],
+        'POST v1/tokens/create' => ['rcmail_api_accounts', 'token_create', true],
+        'POST v1/tokens/revoke' => ['rcmail_api_accounts', 'token_revoke', true],
     ];
 
     public function __construct(rcmail $rc)

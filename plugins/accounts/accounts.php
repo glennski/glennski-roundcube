@@ -315,6 +315,65 @@ class accounts extends rcube_plugin
         return null;
     }
 
+    /**
+     * Sign in without a password for a token holder (MCP): to the default mailbox or the one named by id or address.
+     *
+     * @return string|null error message, null on success
+     */
+    public function api_token_login(array $app, ?string $mailbox = null): ?string
+    {
+        $boxes = $this->store()->mailboxes($app['user_id']);
+        $id = $boxes ? (int) $boxes[0]['mailbox_id'] : 0;
+
+        if ($mailbox !== null && $mailbox !== '') {
+            $id = 0;
+            foreach ($boxes as $b) {
+                if ((string) $b['mailbox_id'] === $mailbox || strcasecmp($b['email'], $mailbox) === 0) {
+                    $id = (int) $b['mailbox_id'];
+                }
+            }
+        }
+
+        $box = $id ? $this->store()->mailbox($id, $app['user_id']) : null;
+
+        if (!$box) {
+            return 'Unknown mailbox';
+        }
+
+        $this->switching = ['box' => $box];
+        $this->rc->kill_session();
+
+        if (!$this->rc->login($box['imap_user'], $box['imap_pass'], $box['imap_host'])) {
+            return $this->gettext('connectfailed');
+        }
+
+        $this->rc->session->remove('temp');
+        $this->remember($app, $box);
+
+        return null;
+    }
+
+    /**
+     * @return array<int, array{token_id: int, name: string, created: ?string, last_used: ?string}>
+     */
+    public function api_tokens(): array
+    {
+        return $this->store()->tokens($this->app_user());
+    }
+
+    /**
+     * @return array{id: int, token: string}
+     */
+    public function api_token_create(string $name): array
+    {
+        return $this->store()->token_create($this->app_user(), $name);
+    }
+
+    public function api_token_revoke(int $id): void
+    {
+        $this->store()->token_revoke($id, $this->app_user());
+    }
+
     public function api_password(string $current, string $new): ?string
     {
         try {

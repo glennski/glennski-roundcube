@@ -24,6 +24,10 @@ class rcmail_api_session
     {
         $rc = $this->api->rc;
 
+        if ($this->api->pending()) {
+            return $this->pending_info();
+        }
+
         if (!empty($rc->user->ID) && !empty($_SESSION['user_id'])) {
             if ($rc->session->check_auth()) {
                 return $this->info();
@@ -68,6 +72,13 @@ class rcmail_api_session
             'cookiecheck' => true,
         ]);
 
+        // right account, but no mailbox yet: signed in without a mail session
+        if (!empty($auth['pending']) && ($plugin = $rc->plugins->get_plugin('accounts')) && method_exists($plugin, 'api_pending')) {
+            $plugin->api_pending($auth['pending']);
+
+            return $this->pending_info();
+        }
+
         if ($auth['valid'] && empty($auth['abort']) && $rc->login($auth['user'], $auth['pass'], $auth['host'], $auth['cookiecheck'])) {
             $rc->session->remove('temp');
             $rc->session->regenerate_id(false);
@@ -108,6 +119,13 @@ class rcmail_api_session
     public function logout(): array
     {
         $rc = $this->api->rc;
+
+        if ($this->api->pending()) {
+            $rc->kill_session();
+
+            return ['authenticated' => false, 'token' => $rc->get_request_token()];
+        }
+
         $userdata = ['user' => $_SESSION['username'] ?? '', 'host' => $_SESSION['storage_host'] ?? '', 'lang' => $rc->user->language];
 
         $rc->logout_actions();
@@ -140,6 +158,28 @@ class rcmail_api_session
             ],
             'identities' => $identities,
             'accounts' => $accounts,
+            'settings' => rcmail_api_data::settings_values($rc),
+        ];
+    }
+
+    /**
+     * State of an account without a mailbox: the client shows the "add your mailbox" screen.
+     */
+    public function pending_info(): array
+    {
+        $rc = $this->api->rc;
+        $plugin = $rc->plugins->get_plugin('accounts');
+
+        return [
+            'authenticated' => true,
+            'pending' => true,
+            'token' => $rc->get_request_token(),
+            'product' => $rc->config->get('product_name'),
+            'version' => defined('GLENNSKI_VERSION') ? GLENNSKI_VERSION : null,
+            'mode' => 'multi',
+            'user' => ['username' => $_SESSION['accounts']['user'] ?? '', 'email' => '', 'name' => ''],
+            'identities' => [],
+            'accounts' => $plugin->api_state(),
             'settings' => rcmail_api_data::settings_values($rc),
         ];
     }

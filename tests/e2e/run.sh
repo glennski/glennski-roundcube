@@ -24,6 +24,10 @@ curl -s -b "$JAR" -c "$JAR" --data-urlencode _token="$TOKEN" -d _mode=multi -d _
 rm -f "$JAR"
 
 python3 seed.py
+# an account without a mailbox (installer step skipped)
+docker compose -p $PROJECT exec -T -u www-data webmail php bin/accounts.php add-user nobox 'correct horse' >/dev/null
+python3 pending_test.py
+docker compose -p $PROJECT exec -T -u www-data webmail php bin/accounts.php add-user uibox 'correct horse' >/dev/null
 python3 api_test.py
 API_BASE=$URL/ python3 mcp_test.py
 

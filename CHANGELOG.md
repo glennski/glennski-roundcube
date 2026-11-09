@@ -8,6 +8,7 @@ This file includes only changes we consider noteworthy for users, admins and plu
 - The web interface is now a build project (`frontend/`: React, Tailwind CSS, Vite). The build output stays in `public_html/app/` and is committed, so uploading to a plain PHP server still works without Node. The Docker image builds it from the sources. See `frontend/README.md`
 - Shared design layer `app/design/` (`tokens.css`, `primitives.css`, source in `frontend/public/design/`): colours, font and building blocks (buttons, fields, chips, cards, segmented control, tiles) as plain CSS, used by the web interface and the first-run installer; `app/design/index.html` shows them all
 - The installer has the same look as the web interface (light/dark, Plus Jakarta Sans) and no longer relies on inline `style` attributes, which its CSP blocked
+- The first mailbox is optional in the installer's multi-account setup. An account without a mailbox signs in anyway and sees a welcome screen where it adds the first one (API: `pending` session, see `docs/API.md`)
 - The list uses the full width until a message is opened; on phones the message opens full screen
 
 ## Glennski 0.4.0 (based on Roundcube 1.8-git)

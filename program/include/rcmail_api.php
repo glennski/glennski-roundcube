@@ -35,11 +35,16 @@ class rcmail_api
     public rcmail $rc;
     public array $body = [];
 
-    /** @var array<string, array{0: string, 1: string, 2: bool}> "METHOD path" => [class, method, auth required] */
+    /**
+     * "METHOD path" => [class, method, auth]. auth: false = open, true = signed in to a mailbox,
+     * 'app' = also allowed for an account that has no mailbox yet (see pending()).
+     *
+     * @var array<string, array{0: string, 1: string, 2: bool|string}>
+     */
     protected const ROUTES = [
         'GET v1/session' => ['rcmail_api_session', 'show', false],
         'POST v1/auth/login' => ['rcmail_api_session', 'login', false],
-        'POST v1/auth/logout' => ['rcmail_api_session', 'logout', true],
+        'POST v1/auth/logout' => ['rcmail_api_session', 'logout', 'app'],
 
         'GET v1/folders' => ['rcmail_api_mail', 'folders', true],
         'POST v1/folders/create' => ['rcmail_api_mail', 'folder_create', true],
@@ -66,13 +71,13 @@ class rcmail_api
         'GET v1/settings' => ['rcmail_api_data', 'settings', true],
         'POST v1/settings' => ['rcmail_api_data', 'settings_save', true],
 
-        'GET v1/accounts' => ['rcmail_api_accounts', 'index', true],
-        'POST v1/accounts/add' => ['rcmail_api_accounts', 'add', true],
-        'POST v1/accounts/detect' => ['rcmail_api_accounts', 'detect', true],
+        'GET v1/accounts' => ['rcmail_api_accounts', 'index', 'app'],
+        'POST v1/accounts/add' => ['rcmail_api_accounts', 'add', 'app'],
+        'POST v1/accounts/detect' => ['rcmail_api_accounts', 'detect', 'app'],
         'POST v1/accounts/remove' => ['rcmail_api_accounts', 'remove', true],
         'POST v1/accounts/default' => ['rcmail_api_accounts', 'make_default', true],
-        'POST v1/accounts/switch' => ['rcmail_api_accounts', 'switch', true],
-        'POST v1/accounts/password' => ['rcmail_api_accounts', 'password', true],
+        'POST v1/accounts/switch' => ['rcmail_api_accounts', 'switch', 'app'],
+        'POST v1/accounts/password' => ['rcmail_api_accounts', 'password', 'app'],
         'GET v1/tokens' => ['rcmail_api_accounts', 'tokens', true],
         'POST v1/tokens/create' => ['rcmail_api_accounts', 'token_create', true],
         'POST v1/tokens/revoke' => ['rcmail_api_accounts', 'token_revoke', true],
@@ -130,7 +135,7 @@ class rcmail_api
         }
 
         if ($auth) {
-            $this->require_login();
+            $this->require_login($auth === 'app');
         }
 
         $result = (new $class($this))->{$action}();
@@ -172,8 +177,25 @@ class rcmail_api
         }
     }
 
-    public function require_login(): void
+    /**
+     * An account of the accounts plugin that is signed in but has no mailbox yet: there is a session,
+     * but no mail user. Such a session only reaches the routes marked 'app'.
+     */
+    public function pending(): bool
     {
+        return empty($_SESSION['user_id']) && !empty($_SESSION['accounts']['id']);
+    }
+
+    public function require_login(bool $allow_pending = false): void
+    {
+        if ($allow_pending && $this->pending()) {
+            if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
+                $this->require_token_for_get();
+            }
+
+            return;
+        }
+
         if (empty($this->rc->user->ID) || empty($_SESSION['user_id'])) {
             throw new rcmail_api_exception(401, 'unauthenticated', 'Please sign in');
         }

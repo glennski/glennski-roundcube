@@ -100,17 +100,25 @@ if (!$locked && $mode !== '') {
             if (($_POST['_admin_pass'] ?? '') !== ($_POST['_admin_pass2'] ?? '')) {
                 throw new \RuntimeException($t('The two passwords do not match.', 'Die beiden Passwörter stimmen nicht überein.'));
             }
-            if (!filter_var($box['email'], \FILTER_VALIDATE_EMAIL) || $box['imap_pass'] === '' || !preg_match($host_re, $box['imap_host'])) {
-                throw new \RuntimeException($t('Please enter the email address, password and IMAP server of the first mailbox.', 'Bitte E-Mail-Adresse, Passwort und IMAP-Server des ersten Postfachs angeben.'));
-            }
-            // the installer is an admin context: any server is fine, but the login must work
-            if ($err = \accounts_store::check_imap($box['imap_host'], $box['imap_user'], $box['imap_pass'])) {
-                throw new \RuntimeException($t('Could not sign in to the mailbox: ', 'Anmeldung am Postfach nicht möglich: ') . $err);
+            // the first mailbox is optional: all three fields empty means "later", anything else must be complete and work
+            $has_box = $box['email'] !== '' || $box['imap_pass'] !== '' || $in('_mb_imap_host') !== '';
+
+            if ($has_box) {
+                if (!filter_var($box['email'], \FILTER_VALIDATE_EMAIL) || $box['imap_pass'] === '' || !preg_match($host_re, $box['imap_host'])) {
+                    throw new \RuntimeException($t('Please enter the email address, password and IMAP server of the mailbox, or leave all three empty to add it later.', 'Bitte E-Mail-Adresse, Passwort und IMAP-Server des Postfachs angeben, oder alle drei leer lassen und es später hinzufügen.'));
+                }
+                // the installer is an admin context: any server is fine, but the login must work
+                if ($err = \accounts_store::check_imap($box['imap_host'], $box['imap_user'], $box['imap_pass'])) {
+                    throw new \RuntimeException($t('Could not sign in to the mailbox: ', 'Anmeldung am Postfach nicht möglich: ') . $err);
+                }
             }
 
             $store = new \accounts_store();
             $store->install();
-            $store->mailbox_add($store->user_create($admin, (string) $_POST['_admin_pass']), $box);
+            $user_id = $store->user_create($admin, (string) $_POST['_admin_pass']);
+            if ($has_box) {
+                $store->mailbox_add($user_id, $box);
+            }
 
             $config = ['mode' => 'multi', 'imap_host' => 'localhost:143', 'plugins' => ['accounts']];
             $saved_user = $admin;
@@ -121,7 +129,7 @@ if (!$locked && $mode !== '') {
             throw new \RuntimeException($t("Could not write {$file}. Is the data folder writable?", "{$file} konnte nicht geschrieben werden. Ist der Datenordner beschreibbar?"));
         }
 
-        $saved = $config + ['user' => $saved_user ?? ''];
+        $saved = $config + ['user' => $saved_user ?? '', 'has_box' => $has_box ?? false];
         unset($_SESSION['firstrun_token']);
     } catch (\Exception $e) {
         $error = $e->getMessage();
@@ -167,6 +175,7 @@ h3 { font-size: 1rem; margin: 0 0 12px; font-weight: 600; letter-spacing: -.01em
 .row { display: flex; gap: 8px; align-items: stretch; }
 .row .input { flex: 1; }
 .row.detect { margin-bottom: 8px; }
+.skip { margin: -6px 0 14px; }
 .narrow { max-width: 420px; }
 .alert-error { margin-bottom: 20px; }
 .done { text-align: center; display: grid; justify-items: center; gap: 8px; }
@@ -198,7 +207,9 @@ hr { border: 0; border-top: 1px solid rgb(var(--outline-variant) / .5); margin: 
     <span class="tick" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span>
     <h2><?php echo $t('All set', 'Alles bereit'); ?></h2>
     <?php if ($saved['mode'] === 'multi') { ?>
-      <p><?php echo $t('Sign in with your account', 'Melde dich mit deinem Konto an'); ?> <code class="code"><?php echo $q($saved['user']); ?></code>. <?php echo $t('Add more mailboxes under Settings → Accounts.', 'Weitere Postfächer fügst du unter Einstellungen → Konten hinzu.'); ?></p>
+      <p><?php echo $t('Sign in with your account', 'Melde dich mit deinem Konto an'); ?> <code class="code"><?php echo $q($saved['user']); ?></code>. <?php echo $saved['has_box']
+          ? $t('Add more mailboxes under Settings → Accounts.', 'Weitere Postfächer fügst du unter Einstellungen → Konten hinzu.')
+          : $t('You will be asked to add your first mailbox right after signing in.', 'Gleich nach der Anmeldung fügst du dein erstes Postfach hinzu.'); ?></p>
     <?php } elseif (($saved['imap_host'] ?? '') === '') { ?>
       <p><?php echo $t('Sign in with any email address. The mail servers are detected automatically.', 'Melde dich mit einer beliebigen E-Mail-Adresse an. Die Mailserver werden automatisch erkannt.'); ?></p>
     <?php } else { ?>
@@ -272,7 +283,8 @@ hr { border: 0; border-top: 1px solid rgb(var(--outline-variant) / .5); margin: 
       <div class="field"><label for="m-pass2"><?php echo $t('Repeat password', 'Passwort wiederholen'); ?></label><input class="input" type="password" id="m-pass2" name="_admin_pass2" autocomplete="new-password"></div>
     </div>
     <hr>
-    <h3><?php echo $t('Your first mailbox', 'Dein erstes Postfach'); ?></h3>
+    <h3><?php echo $t('Your first mailbox', 'Dein erstes Postfach'); ?> <span class="hint"><?php echo $t('(optional)', '(optional)'); ?></span></h3>
+    <p class="hint skip"><?php echo $t('You can skip this and add a mailbox after signing in.', 'Das kannst du überspringen und nach der Anmeldung ein Postfach hinzufügen.'); ?></p>
     <div class="grid">
       <div class="field"><label for="m-email"><?php echo $t('Email address', 'E-Mail-Adresse'); ?></label><input class="input" type="email" id="m-email" name="_mb_email" autocomplete="email" placeholder="you@example.com" value="<?php echo $val('_mb_email'); ?>"></div>
       <div class="field"><label for="m-mbpass"><?php echo $t('Mailbox password', 'Postfach-Passwort'); ?></label><input class="input" type="password" id="m-mbpass" name="_mb_pass" autocomplete="off"></div>

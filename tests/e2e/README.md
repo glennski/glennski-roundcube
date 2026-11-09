@@ -7,6 +7,8 @@ attachments) and then runs
 * `api_test.py` - the JSON API (`api.php/v1/*`): login and CSRF, folders, search, reading with
   sanitized HTML, attachments and their download rules, actions, sending, drafts, contacts,
   identities, settings and switching between mailboxes
+* `pending_test.py` - an account without a mailbox (installer step skipped): signs in as "pending", only the account
+  routes work, adding the first mailbox opens the mail view.
 * `mcp_test.py` - the MCP server (`mcp.php`): token auth, protocol basics, every group of tools,
   tool errors, mailbox selection, revoking a token
 * `ui_test.py` - the new frontend in Chromium: sign in, read, search, select, reply, compose with

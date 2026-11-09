@@ -68,6 +68,8 @@ class accounts extends rcube_plugin
         if (!$box) {
             $args['abort'] = true;
             $args['error'] = 'accounts.nomailbox';
+            // the JSON API lets such an account in without a mail session (see api_pending)
+            $args['pending'] = $app;
 
             return $args;
         }
@@ -225,6 +227,17 @@ class accounts extends rcube_plugin
         ], $this->store()->mailboxes($this->app_user()));
 
         return ['user' => (string) ($_SESSION['accounts']['user'] ?? ''), 'current' => (int) ($_SESSION['accounts']['box'] ?? 0), 'mailboxes' => $boxes];
+    }
+
+    /**
+     * The account is verified but has no mailbox yet: keep it signed in without a mail session.
+     * Only account routes work until a mailbox is added and opened (api_switch).
+     */
+    public function api_pending(array $app): void
+    {
+        $_SESSION['accounts'] = ['user' => $app['username'], 'id' => $app['user_id'], 'box' => 0, 'smtp' => ''];
+        $this->rc->session->remove('temp');
+        $this->rc->session->regenerate_id(false);
     }
 
     /**

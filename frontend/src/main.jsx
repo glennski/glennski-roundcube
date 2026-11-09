@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { useStore, setState } from './lib/store.js';
 import { boot } from './lib/actions.js';
 import { Login } from './components/Login.jsx';
+import { Welcome } from './components/Welcome.jsx';
 import { Sidebar } from './components/Sidebar.jsx';
 import { MessageList } from './components/MessageList.jsx';
 import { Reader } from './components/Reader.jsx';
@@ -16,6 +17,7 @@ function App() {
 
     const booted = useStore((s) => s.booted);
     const authenticated = useStore((s) => !!(s.session && s.session.authenticated));
+    const pending = useStore((s) => !!(s.session && s.session.pending));
     const sidebarOpen = useStore((s) => s.sidebarOpen);
     const reading = useStore((s) => !!s.current);
 
@@ -23,7 +25,7 @@ function App() {
 
     return (
         <>
-            {authenticated ? (
+            {authenticated && pending ? <Welcome /> : authenticated ? (
                 <div className="flex h-full">
                     <Sidebar />
                     {sidebarOpen && <div className="fixed inset-0 z-[65] bg-black/40 lg:hidden" onClick={() => setState({ sidebarOpen: false })} />}

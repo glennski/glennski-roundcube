@@ -21,7 +21,7 @@ const en = {
     'list.search': 'Search mail', 'list.filter.all': 'All', 'list.filter.unseen': 'Unread', 'list.filter.flagged': 'Starred',
     'list.empty': 'Nothing here yet', 'list.emptyHint': 'Messages you receive will show up in this folder.',
     'list.noresults': 'No matches', 'list.noresultsHint': 'Try other words or remove the filter.', 'list.loadMore': 'Load more',
-    'list.refresh': 'Refresh', 'list.today': 'Today', 'list.yesterday': 'Yesterday', 'list.older': 'Older', 'list.selected': '{n} selected', 'list.selectAll': 'Select all', 'list.clearSelection': 'Clear selection',
+    'welcome.title': 'Welcome, {name}', 'welcome.text': 'Add your first mailbox to get started. Any provider works, and you can add more later under Settings.', 'list.refresh': 'Refresh', 'list.today': 'Today', 'list.yesterday': 'Yesterday', 'list.older': 'Older', 'list.selected': '{n} selected', 'list.selectAll': 'Select all', 'list.clearSelection': 'Clear selection',
     'list.count': '{n} messages', 'list.count1': '1 message', 'list.error': 'The messages could not be loaded.',
 
     'act.reply': 'Reply', 'act.replyall': 'Reply all', 'act.forward': 'Forward', 'act.archive': 'Archive', 'act.delete': 'Delete',
@@ -112,7 +112,7 @@ const de = {
     'list.search': 'E-Mails durchsuchen', 'list.filter.all': 'Alle', 'list.filter.unseen': 'Ungelesen', 'list.filter.flagged': 'Markiert',
     'list.empty': 'Noch nichts da', 'list.emptyHint': 'Empfangene Nachrichten erscheinen in diesem Ordner.',
     'list.noresults': 'Keine Treffer', 'list.noresultsHint': 'Versuche andere Begriffe oder entferne den Filter.', 'list.loadMore': 'Mehr laden',
-    'list.refresh': 'Aktualisieren', 'list.today': 'Heute', 'list.yesterday': 'Gestern', 'list.older': 'Älter', 'list.selected': '{n} ausgewählt', 'list.selectAll': 'Alle auswählen', 'list.clearSelection': 'Auswahl aufheben',
+    'welcome.title': 'Willkommen, {name}', 'welcome.text': 'Füge dein erstes Postfach hinzu, um loszulegen. Jeder Anbieter funktioniert, weitere ergänzt du später in den Einstellungen.', 'list.refresh': 'Aktualisieren', 'list.today': 'Heute', 'list.yesterday': 'Gestern', 'list.older': 'Älter', 'list.selected': '{n} ausgewählt', 'list.selectAll': 'Alle auswählen', 'list.clearSelection': 'Auswahl aufheben',
     'list.count': '{n} Nachrichten', 'list.count1': '1 Nachricht', 'list.error': 'Die Nachrichten konnten nicht geladen werden.',
 
     'act.reply': 'Antworten', 'act.replyall': 'Allen antworten', 'act.forward': 'Weiterleiten', 'act.archive': 'Archivieren', 'act.delete': 'Löschen',

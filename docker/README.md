@@ -11,7 +11,7 @@ installation is used:
   Either fixed servers (detected from an address, or typed in) or *any address* (servers are detected at every login).
 * **Account with several mailboxes** - users log in with an account of this application (own password) and
   add mailboxes of any provider under *Settings > Accounts* (server detection, Google/Microsoft/iCloud presets).
-  The installer creates the first account and its first mailbox. If a default mailbox becomes unusable, repair it
+  The installer creates the first account and, optionally, its first mailbox (without one, the account adds it right after signing in). If a default mailbox becomes unusable, repair it
   with `docker compose exec webmail php bin/accounts.php mailboxes|set-default|passwd` (run without arguments for help).
 
 The answer is stored in `/var/roundcube/setup.json`; once it exists the installer is disabled. Delete that file to run the choice again.

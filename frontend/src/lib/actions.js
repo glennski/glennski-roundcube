@@ -63,7 +63,7 @@ export async function boot() {
         applySession(session);
         setState({ booted: true });
 
-        if (session.authenticated) await enter();
+        if (session.authenticated && !session.pending) await enter();
     } catch (e) {
         setState({ booted: true, session: { authenticated: false }, bootError: e.message });
     }
@@ -73,7 +73,7 @@ export async function login(username, password, host) {
     const session = await api.login(username, password, host);
 
     applySession(session);
-    await enter();
+    if (!session.pending) await enter();
 }
 
 export async function logout() {
@@ -104,6 +104,8 @@ function stopPolling() {
 }
 
 async function poll() {
+    if (getState().session?.pending) return;
+
     const before = getState();
     const inbox = before.folders.find((f) => f.role === 'inbox');
 

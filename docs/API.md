@@ -39,7 +39,7 @@ Roundcube task (`api`), so plugins that extend the web UI do not load.
 | `GET v1/settings`, `POST v1/settings` | `theme`, `density`, `mail_pagesize`, `htmleditor`, `language`, `timezone` |
 | `GET v1/attachment?folder&uid&part` | Attachment as JSON `{name, type, size, encoding: text\|base64, content}`, up to 10 MB (for clients that cannot follow download links) |
 | `GET v1/tokens`, `POST v1/tokens/create` `revoke` | Access tokens for the [MCP server](MCP.md). `create` returns the plain `access_token` once |
-| `GET v1/accounts`, `POST v1/accounts/add` `detect` `remove` `default` `switch` `password` | Multi-account mode only. `switch` replaces the session and returns the new state |
+| `GET v1/accounts`, `POST v1/accounts/add` `detect` `remove` `default` `switch` `password` | Multi-account mode only. `switch` replaces the session and returns the new state. An account without a mailbox signs in as `pending` (`session.pending: true`, no identities): only `session`, `auth/logout`, `accounts` (list, `add`, `detect`, `switch`, `password`) work, everything else answers 401 until its first mailbox is added and opened |
 
 ## Message HTML
 

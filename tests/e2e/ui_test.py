@@ -165,6 +165,19 @@ with sync_playwright() as p:
     page.click("button[aria-label='Settings']"); page.wait_for_selector("[role=tablist]")
     page.click("[role=radio] >> text=Match system"); page.keyboard.press("Escape"); gone(page, "[role=dialog]")
 
+    # an account without a mailbox: welcome screen, add the first mailbox, land in the mail view
+    w = b.new_context(viewport={"width": 1100, "height": 800}, locale="en-US"); wp = w.new_page(); wp.on("pageerror", lambda e: errors.append(f"welcome pageerror: {e}"))
+    wp.goto(BASE); wp.wait_for_selector("input[name=username]")
+    wp.fill("input[name=username]", "uibox"); wp.fill("input[name=password]", "correct horse"); wp.click("button[type=submit]")
+    wp.wait_for_selector("h1 >> text=Welcome, uibox", timeout=15000); check("no mailbox: welcome screen", wp.locator("aside").count() == 0)
+    wp.screenshot(path=OUT + "17-welcome.png")
+    wp.fill(".card-form input[type=email]", "uibox@example.org"); wp.fill(".card-form input[type=password]", "pw")
+    wp.fill("input[placeholder='ssl://imap.example.com:993']", "greenmail:3143"); wp.fill("input[placeholder='tls://smtp.example.com:587']", "greenmail:3025")
+    wp.click(".card-form button[type=submit]"); wp.wait_for_selector("aside [aria-current=page]", timeout=15000)
+    check("first mailbox opens the mail view", wp.locator("aside .compose-btn").count() == 1)
+    expect(wp.locator(".account-text strong")).to_have_text("uibox@example.org", timeout=8000)
+    w.close()
+
     # mobile
     m = b.new_context(viewport={"width": 390, "height": 844}, locale="en-US", device_scale_factor=2, is_mobile=True, has_touch=True)
     mp = m.new_page(); mp.on("pageerror", lambda e: errors.append(f"mobile pageerror: {e}"))

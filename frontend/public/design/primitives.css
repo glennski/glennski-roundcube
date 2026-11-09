@@ -65,6 +65,10 @@
 /* ---- containers ------------------------------------------------------------------------- */
 .card { padding: 1.5rem; border-radius: var(--radius-lg); background: rgb(var(--surface-container-lowest)); box-shadow: var(--shadow-sm); }
 .card-form { display: grid; gap: 1rem; padding: 1rem; border-radius: var(--radius-md); background: rgb(var(--surface-container-low)); }
+/* controls on a tinted surface step up to the lightest one, or they would vanish */
+.card-form .input, .card-form .btn:not(.btn-primary):not(.btn-danger) { background: rgb(var(--surface-container-lowest)); }
+.card-form .btn:not(.btn-primary):not(.btn-danger):hover { background: rgb(var(--surface-container-high)); }
+.card-form .input:focus { border-color: rgb(var(--outline-variant)); }
 
 /* a group of options where one is on: <div class="segmented"> with buttons (aria-checked / .on) or labels around radio inputs */
 .segmented { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 2px; border-radius: var(--radius-sm); background: rgb(var(--surface-container-low)); }

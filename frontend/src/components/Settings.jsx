@@ -77,7 +77,8 @@ const PRESETS = [
     ['iCloud', 'ssl://imap.mail.me.com:993', 'tls://smtp.mail.me.com:587'],
 ];
 
-function AddMailbox() {
+/** The form for a new mailbox. `onAdded` gets the new account state; by default it replaces the state in the store. */
+export function AddMailbox({ onAdded }) {
     const empty = { email: '', password: '', imap_host: '', smtp_host: '', imap_user: '', label: '' };
     const [form, setForm] = useState(empty);
     const [status, setStatus] = useState(null);
@@ -102,7 +103,11 @@ function AddMailbox() {
         setError('');
 
         try {
-            setAccounts(await api.addAccount({ ...form }));
+            const state = await api.addAccount({ ...form });
+
+            if (onAdded) return onAdded(state);
+
+            setAccounts(state);
             setForm(empty);
             setStatus(null);
             toast(t('acc.added'), 'success');

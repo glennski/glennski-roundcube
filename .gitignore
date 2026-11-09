@@ -25,6 +25,9 @@ program/js/jstz.min.js
 program/js/publickey.js
 program/js/tinymce/
 
+# web interface build tooling (the build output public_html/app is committed)
+frontend/node_modules
+
 # eslint dependencies
 /node_modules
 /package.json

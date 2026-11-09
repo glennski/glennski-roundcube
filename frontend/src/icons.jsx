@@ -1,7 +1,5 @@
 // Inline SVG icons (24x24, stroke based). Paths only, so they follow the text colour.
 
-import { html } from './vendor/htm-preact.mjs';
-
 const PATHS = {
     inbox: 'M3 13h5l1.5 3h5L16 13h5M5 5h14l2 8v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6z',
     send: 'M21 3 10 14M21 3l-7 18-4-7-7-4z',
@@ -49,9 +47,14 @@ const PATHS = {
     minimize: 'M5 19h14',
     expand: 'M4 14v6h6M20 10V4h-6M4 20l7-7M20 4l-7 7',
     warning: 'M12 3 2.5 20h19zM12 10v4M12 17.5v.01',
+    keyboard: 'M3 6h18v12H3zM7 10h.01M11 10h.01M15 10h.01M7 14h10',
     shield: 'M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z',
 };
 
-export function Icon({ name, size = 18, class: cls = '', filled = false }) {
-    return html`<svg class=${`icon ${cls}`} width=${size} height=${size} viewBox="0 0 24 24" fill=${filled ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d=${PATHS[name] || PATHS.mail} /></svg>`;
+export function Icon({ name, size = 18, className = '', filled = false }) {
+    return (
+        <svg className={`shrink-0 ${className}`} width={size} height={size} viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d={PATHS[name] || PATHS.mail} />
+        </svg>
+    );
 }

@@ -43,7 +43,7 @@ This fork adds, on top of Roundcube:
   (classic login with address + mail password) or an *account with several mailboxes*
   (own password, mailboxes from any provider added under Settings > Accounts, switch between them).
   Also available as `bin/setup.php`
-* **New web interface** - a fast single-page client (`public_html/app/`) on top of a JSON API
+* **New web interface** - a fast single-page client (React + Tailwind, source in [`frontend/`](frontend/README.md), build in `public_html/app/`) on top of a JSON API
   (`public_html/api.php`, documented in [docs/API.md](docs/API.md)). It is the default at the root
   URL; the classic Elastic interface stays available at `/?classic=1`, or set `$config['frontend'] = 'classic'`.
 * **MCP server** - `public_html/mcp.php` lets AI assistants search, read, send and sort mail and

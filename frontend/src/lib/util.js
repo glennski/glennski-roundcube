@@ -108,3 +108,20 @@ export function uid() {
 export function clamp(n, min, max) {
     return Math.max(min, Math.min(max, n));
 }
+
+/** Group key and label for the day headers of the message list. */
+export function dayGroup(iso, locale, labels) {
+    if (!iso) return { key: 'none', label: labels.older };
+
+    const d = new Date(iso);
+    const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const now = new Date();
+    const diff = Math.round((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - day) / 86400000);
+
+    if (diff === 0) return { key: 'today', label: labels.today };
+    if (diff === 1) return { key: 'yesterday', label: labels.yesterday };
+
+    const key = day.toISOString().slice(0, 10);
+
+    return { key, label: d.toLocaleDateString(locale, diff > 0 && diff < 7 ? { weekday: 'long' } : { day: 'numeric', month: 'long', ...(d.getFullYear() === now.getFullYear() ? {} : { year: 'numeric' }) }) };
+}

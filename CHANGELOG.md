@@ -2,6 +2,12 @@
 
 This file includes only changes we consider noteworthy for users, admins and plugin authors. For a full view please look at the git history.
 
+## Glennski 0.5.0 (based on Roundcube 1.8-git)
+
+- New look ("Aether"): minimal, neutral palette, one-line message list grouped by day, Plus Jakarta Sans (bundled, no external fonts), light/dark/system
+- The web interface is now a build project (`frontend/`: React, Tailwind CSS, Vite). The build output stays in `public_html/app/` and is committed, so uploading to a plain PHP server still works without Node. The Docker image builds it from the sources. See `frontend/README.md`
+- The list uses the full width until a message is opened; on phones the message opens full screen
+
 ## Glennski 0.4.0 (based on Roundcube 1.8-git)
 
 - Add the MCP server `mcp.php` (see `docs/MCP.md`): AI assistants can search, read, send, sort and delete mail, manage folders and contacts, and use any mailbox of the account. Authentication with access tokens (multi-account mode only)
@@ -11,7 +17,7 @@ This file includes only changes we consider noteworthy for users, admins and plu
 
 ## Glennski 0.3.0 (based on Roundcube 1.8-git)
 
-- New web interface (`public_html/app/`, Preact + htm without a build step): three-pane layout down to phones, light/dark/system theme, compact or comfortable lists, English and German, keyboard shortcuts, search and filters, bulk actions, folder management, compose windows with recipient autocomplete, formatting, attachments (drag and drop, paste), reply/reply all/forward and autosaved drafts, settings (general, accounts, identities, contacts), mailbox switcher in the sidebar
+- New web interface (`public_html/app/`, Preact + htm): three-pane layout down to phones, light/dark/system theme, compact or comfortable lists, English and German, keyboard shortcuts, search and filters, bulk actions, folder management, compose windows with recipient autocomplete, formatting, attachments (drag and drop, paste), reply/reply all/forward and autosaved drafts, settings (general, accounts, identities, contacts), mailbox switcher in the sidebar
 - Add the JSON API `api.php/v1/*` (see `docs/API.md`): sessions with CSRF protection, folders, messages, search, sanitized HTML, attachments, actions, sending, contacts, identities, settings, mailboxes
 - New config option `frontend` (`glennski` by default, `classic` for the Elastic skin). The other interface stays available: `/?classic=1` and `/app/`
 - Add end-to-end tests (`tests/e2e/`): API and browser tests against a container stack with a throw-away mail server

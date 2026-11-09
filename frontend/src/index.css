@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Colour tokens as RGB channels (see tailwind.config.js). Light is the default, dark follows the system
+   unless the user picked a theme (data-theme on <html>, set by the app). */
+:root {
+    color-scheme: light;
+    --surface: 249 249 251; --surface-bright: 249 249 251; --surface-dim: 217 218 220; --surface-variant: 226 226 228;
+    --surface-container-lowest: 255 255 255; --surface-container-low: 243 243 245; --surface-container: 238 238 240;
+    --surface-container-high: 232 232 234; --surface-container-highest: 226 226 228;
+    --on-surface: 26 28 29; --on-surface-variant: 68 71 72; --outline: 116 120 120; --outline-variant: 196 199 199;
+    --secondary: 94 94 99; --secondary-fixed: 227 226 231; --on-secondary-fixed: 26 27 31;
+    --primary: 0 0 0; --on-primary: 255 255 255; --accent: 43 130 244; --accent-soft: 230 240 254;
+    --error: 186 26 26; --error-container: 255 218 214; --on-error-container: 147 0 10; --ok: 15 138 95; --star: 242 163 15;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --surface: 18 19 20; --surface-bright: 40 41 43; --surface-dim: 14 15 16; --surface-variant: 60 62 64;
+        --surface-container-lowest: 12 13 14; --surface-container-low: 24 25 27; --surface-container: 30 31 33;
+        --surface-container-high: 38 39 41; --surface-container-highest: 48 49 52;
+        --on-surface: 232 232 234; --on-surface-variant: 196 199 199; --outline: 140 144 144; --outline-variant: 68 71 72;
+        --secondary: 168 168 174; --secondary-fixed: 58 58 64; --on-secondary-fixed: 227 226 231;
+        --primary: 245 245 247; --on-primary: 20 20 22; --accent: 92 160 255; --accent-soft: 24 40 66;
+        --error: 255 150 140; --error-container: 70 28 26; --on-error-container: 255 218 214; --ok: 79 212 156; --star: 246 185 59;
+    }
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface: 18 19 20; --surface-bright: 40 41 43; --surface-dim: 14 15 16; --surface-variant: 60 62 64;
+    --surface-container-lowest: 12 13 14; --surface-container-low: 24 25 27; --surface-container: 30 31 33;
+    --surface-container-high: 38 39 41; --surface-container-highest: 48 49 52;
+    --on-surface: 232 232 234; --on-surface-variant: 196 199 199; --outline: 140 144 144; --outline-variant: 68 71 72;
+    --secondary: 168 168 174; --secondary-fixed: 58 58 64; --on-secondary-fixed: 227 226 231;
+    --primary: 245 245 247; --on-primary: 20 20 22; --accent: 92 160 255; --accent-soft: 24 40 66;
+    --error: 255 150 140; --error-container: 70 28 26; --on-error-container: 255 218 214; --ok: 79 212 156; --star: 246 185 59;
+}
+
+/* list density (user setting) */
+:root { --row-py: 0.75rem; }
+:root[data-density="compact"] { --row-py: 0.375rem; }
+
+@layer base {
+    html, body, #root { height: 100%; }
+    body { @apply bg-surface text-on-surface font-sans text-body-md antialiased overflow-hidden selection:bg-surface-container-highest; overscroll-behavior: none; text-rendering: geometricPrecision; }
+    button { @apply cursor-pointer; }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    [hidden] { display: none !important; }
+    :focus-visible:not(input):not(textarea):not([contenteditable]) { @apply outline-none ring-2 ring-accent/50; }
+    input:focus-visible, textarea:focus-visible, [contenteditable]:focus-visible { @apply outline-none; }
+    ::placeholder { @apply text-outline; }
+    /* thin, unobtrusive scrollbars */
+    * { scrollbar-width: thin; scrollbar-color: rgb(var(--outline-variant)) transparent; }
+}
+
+@layer components {
+    .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg bg-surface-container-low px-3.5 py-2 text-label-lg text-on-surface transition-colors hover:bg-surface-container disabled:cursor-not-allowed disabled:opacity-50; }
+    .btn-primary { @apply bg-primary text-on-primary hover:bg-primary/90; }
+    .btn-danger { @apply bg-transparent text-error hover:bg-error-container/60; }
+    .icon-btn { @apply grid h-8 w-8 shrink-0 place-items-center rounded-lg text-secondary transition-colors hover:bg-surface-container hover:text-on-surface disabled:cursor-not-allowed disabled:opacity-40; }
+    .input { @apply min-h-10 w-full rounded-lg border border-transparent bg-surface-container-low px-3 py-2 text-on-surface outline-none transition-colors focus:border-outline-variant focus:bg-surface-container-lowest; }
+    .field { @apply grid gap-1.5; }
+    .field > span:first-child { @apply text-label-md text-on-surface-variant; }
+    .chip { @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-label-md text-secondary transition-colors hover:bg-surface-container hover:text-on-surface; }
+    .chip-on { @apply bg-surface-container-highest text-on-surface; }
+    .kbd { @apply rounded bg-surface-container px-1.5 py-0.5 font-mono text-[10px] font-semibold text-secondary; }
+    .menu-item { @apply flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-label-lg text-on-surface hover:bg-surface-container-high disabled:opacity-50; }
+    .caps { @apply text-label-sm font-semibold uppercase tracking-wider text-secondary; }
+    /* message content inside the compose editor */
+    .editor ul { @apply list-disc pl-6; }
+    .editor ol { @apply list-decimal pl-6; }
+    .editor blockquote, .gl-quote-head + blockquote { @apply my-2 border-l-[3px] border-outline-variant pl-4 text-secondary; }
+    .gl-quote-head, .gl-sig { @apply mt-4 text-secondary; }
+    .alert-error { @apply rounded-lg bg-error-container px-3.5 py-2.5 text-body-md text-on-error-container; }
+}

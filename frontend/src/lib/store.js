@@ -1,6 +1,6 @@
 // Minimal global store: one state object, subscribers re-render when their selected slice changes.
 
-import { useEffect, useRef, useState } from './vendor/htm-preact.mjs';
+import { useEffect, useRef, useState } from 'react';
 
 const state = {
     booted: false,

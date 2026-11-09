@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-# ---- build: PHP deps, JS deps and compiled CSS ------------------------------
+# ---- build: PHP deps, JS deps, compiled CSS and the web interface (frontend/ -> public_html/app) ------------------------------
 FROM php:8.3-cli-bookworm AS build
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates curl git make nodejs npm unzip libzip-dev \
@@ -10,8 +10,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
 COPY . .
-RUN make build \
-    && rm -rf node_modules .git tests .ci .github \
+RUN (cd frontend && npm ci --no-audit --no-fund && npm run build) \
+    && make build \
+    && rm -rf node_modules .git tests .ci .github frontend \
               skins/elastic/node_modules plugins/*/node_modules
 
 # ---- runtime ----------------------------------------------------------------

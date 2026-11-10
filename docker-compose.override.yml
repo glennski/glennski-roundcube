@@ -1,0 +1,5 @@
+# Local test setup (auto-merged by `docker compose`): http://localhost:3001
+services:
+  webmail:
+    ports: !override
+      - "3002:80"
